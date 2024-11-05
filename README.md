@@ -25,7 +25,7 @@ Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y desc
 
 ## 🛠 Funcionalidades <a name="funcionalidades"></a>
 
-Este complemento permiete localizar y descargar objetos geográficos de España por identificadores geográficos y/o por coordenadas geográficas. 
+Este complemento permiete **localizar** y **descargar** objetos geográficos de España por identificadores geográficos y/o por coordenadas geográficas. 
 
 Se pueden localizar los siguientes objetos geográficos:
  
@@ -43,7 +43,7 @@ Se pueden localizar los siguientes objetos geográficos:
  
   * Referencias catastrales (Servicios SOAP. Dirección General de Catastro)
  
-La información que se devuelve puede ser puntual (portales, PK, códigos postales, puntos de interés y referencias catastrales), lineal (viales) y superficial (unidades administrativas y entidades de población).
+La información que se devuelve puede ser **puntual** (portales, PK, códigos postales, puntos de interés y referencias catastrales), **lineal** (viales) y **superficial** (unidades administrativas y entidades de población).
 tiene menú contextual
 
 ---
@@ -80,7 +80,25 @@ Para ello hay que introducir el elemento a buscar y además hay que añadir en *
 
 [👆 Volver](#contenidos)
 
+Se puede obtener la dirección postal de cualquier punto del territorio español a partir de sus coordenadas.
 
+Para ello hay dos métodos:
+
+🔹 **Capturar coordenadas en el mapa**:
+Una vez seleccionado el botón de *Capturar coordenadas del mapa*, hay que seleccional cualquier punto en el poyecto de trabajo, y si el servicior REST Geocoder geolocaliza una dirección, devuelve el resultado.
+
+
+🔹 **Buscar por coordenadas**:
+También se puede buscar una dirección si se tienen sus coordenadas geográficas (latitud y longitud en WGS84).
+
+Para ello hay que segur los siguientes pasos:
+
+1. Rellenar los dos campos:
+ * *Itroduzca lognitud geográfica*
+ * *Itroduzca latitud geográfica*
+
+2. Seleccionar el botón *Buscar por coordenadas*
+   
 ---
 
 ## 🚀 Instalación <a name="instalacion"></a>

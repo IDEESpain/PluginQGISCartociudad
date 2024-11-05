@@ -103,3 +103,12 @@ Para ello hay que introducir el elemento a buscar y además hay que añadir en *
 ├── reverse 📁            # Localización por coordenadas
 └── ...
 ```
+---
+
+## ⛲️ Referencias <a name="referencias"></a>
+
+[👆 Volver](#contenidos)
+
+* [Portal CartoCiudad](https://www.cartociudad.es/web/portal)
+* [Guía Técnica de Servicios Web](https://www.idee.es/resources/documentos/Cartociudad/CartoCiudad_ServiciosWeb.pdf)
+* [Ayuda proyecto CartoCiudad](https://www.idee.es/resources/documentos/Cartociudad/StoryMap.html)

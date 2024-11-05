@@ -29,10 +29,27 @@ Se pueden localizar los siguientes objetos geográficos:
 La información que se devuelve puede ser puntual (portales, PK, códigos postales, puntos de interés y referencias catastrales), lineal (viales) y superficial (unidades administrativas y entidades de población).
 tiene menú contextual
 
-### 🚂 Funcionalidades
+---
 
-#### Localicación por nombre geográfico
+<a name="contenidos"></a>
+
+## 📇 Contenidos
+
+* 🔹 [Funcionalidades](#funcionalidades)
+  * 🔸 [Localización por nombre geográfico](#nombregeografico)
+  * 🔸 [Localización por coordenadas geográficas](#coordenadas)
+  * 📁 [Estructura del código](#scaffolding)
+* 🚀 [Despliegue](#deployserver)
+* ⛲️ [Referencias](#referencias)
+
+---
+
+### 🚂 Funcionalidades <a name="funcionalidades"></a>
+
+#### Localicación por nombre geográfico <a name="nombregeografico"></a>
 
 Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad.
 
 Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*
+
+#### Localicación por coordenadas geográficas <a name="coordenadas"></a>

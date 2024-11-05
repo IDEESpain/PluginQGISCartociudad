@@ -17,7 +17,7 @@ Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y desc
 * 🛠 [Funcionalidades](#funcionalidades)
   * 🔸 [Localización por nombre geográfico](#nombregeografico)
   * 🔸 [Localización por coordenadas geográficas](#coordenadas)
-* 🚀 [Instalación](#despliegue)
+* 🚀 [Instalación](#instalacion)
 * 📁 [Estructura del código](#estructura)
 * ⛲️ [Referencias](#referencias)
 

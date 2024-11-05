@@ -98,7 +98,11 @@ Para ello hay que segur los siguientes pasos:
  * *Itroduzca latitud geográfica*
 
 2. Seleccionar el botón *Buscar por coordenadas*
-   
+
+ *Ejemplo de búsqueda por coordenadas geográficas*:
+ 
+![Ejemplo busqueda filtro 2](docs/Busquedacoordenadas.png)
+
 ---
 
 ## 🚀 Instalación <a name="instalacion"></a>

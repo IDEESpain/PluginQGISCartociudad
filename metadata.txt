@@ -8,7 +8,7 @@ qgisMinimumVersion=3.9
 author=Equipo CartoCiudad
 email=cartociudad@transportes.gob.es
 
-about= <div>Complemento de QGIS para la geolocalización de elementos de CartoCiudad basado en el servico REST «Geocoder CartoCiudad»  (https://www.cartociudad.es/geocoder) que permiete localizar objetos geográficos de España por identificadores geográficos y por coordenadas geográficas. Se pueden localizar los siguientes objetos geográficos:
+about= <div>Complemento de QGIS para la geolocalización y descarga de elementos de CartoCiudad basado en el servicio REST «Geocoder CartoCiudad»  (https://www.cartociudad.es/geocoder) que permite localizar objetos geográficos de España por identificadores geográficos y por coordenadas geográficas. Se pueden localizar los siguientes objetos geográficos:
     <ul style="margin:0;">
     <li>Direcciones postales</li>
     <li>Topónimos</li>

@@ -1,4 +1,4 @@
-# Plugin Geocoder CartoCiudad 
+#  Geocoder CartoCiudad 
 
 ## ✍️ Descripción del plugin
 
@@ -107,6 +107,16 @@ Para ello hay que segur los siguientes pasos:
 
 ## 🚀 Instalación <a name="instalacion"></a>
 
+[👆 Volver](#contenidos)
+
+Hay varias formas de instalar el plugin:
+
+a) Desde QGIS (complementos -> administrar e instalar complementos).
+Si se realiza mediante este punto, es importante habilitar los complementos experimentales para poder utilizarlo (complementos -> administrar e instalar complementos -> configuración -> habilitar también los complementos experimentales). Es así ya que esta versión 1.0 es experimental.
+
+b) Desde el repositorio oficial de complementos https://plugins.qgis.org/plugins. Se buscaría el plugin *Geocoder CartoCiudad*, se descargaría y se importaría desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
+
+c) Desde este repositorio, en la parte de despliegues (releases): https://github.com/IDEESpain/PluginQGISCartociudad/releases. Una vez descargado, se instalaría en QGIS desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
 
 ---
 
@@ -117,7 +127,7 @@ Para ello hay que segur los siguientes pasos:
 ```any
 /
 ├── docs 📁               # Recursos de imágenes del REDMINE
-├── images 🌈             # Imágenes usadas en el plugin
+├── images 🌈             # Imágenes usadas en el 
 ├── LICENSE 📢            # Licencia              
 ├── metadata.txt 📁       # Metadatos
 ├── main.py 📁            # Integración de elementos

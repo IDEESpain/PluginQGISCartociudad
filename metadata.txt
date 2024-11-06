@@ -28,7 +28,7 @@ repository=https://github.com/IDEESpain/PluginQGISCartociudad
 
 # Recommended items
 changelog= Version 1.0 (Noviembre 2024)
-            - Versión inicial
+            - Versión experimental
 
 # Tags
 tags=cartociudad,api,rest,geocoder,localizacion,españa,buscador,direcciones,candidates,find,reverse,ccpp,municipios,poblaciones,locator

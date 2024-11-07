@@ -33,6 +33,6 @@ changelog= Version 1.0 (Noviembre 2024)
 # Tags
 tags=cartociudad,api,rest,geocoder,localizacion,españa,buscador,direcciones,candidates,find,reverse,ccpp,municipios,poblaciones,locator
 
-homepage=https://github.com/IDEESpain/PluginQGISCartociudad
+homepage=https://www.cartociudad.es/web/portal
 category=Plugins
 icon=images/Logo_small.svg

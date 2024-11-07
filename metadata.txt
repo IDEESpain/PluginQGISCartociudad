@@ -1,0 +1,38 @@
+# Mandatory items:
+
+[general]
+name=Geocoder CartoCiudad
+description= CartoCiudad ofrece direcciones postales, topónimos, poblaciones y límites administrativos de España
+version=1.0
+qgisMinimumVersion=3.9
+author=Equipo CartoCiudad
+email=cartociudad@transportes.gob.es
+
+about= <div>Complemento de QGIS para la geolocalización y descarga de elementos de CartoCiudad basado en el servicio REST «Geocoder CartoCiudad»  (https://www.cartociudad.es/geocoder) que permite localizar objetos geográficos de España por identificadores geográficos y por coordenadas geográficas. Se pueden localizar los siguientes objetos geográficos:
+    <ul style="margin:0;">
+    <li>Direcciones postales</li>
+    <li>Topónimos</li>
+    <li>Puntos de Interés</li>
+    <li>Unidades administrativas</li>
+    <li>Poblaciones</li>
+    <li>Códigos postales</li>
+    <li>Referencias catastrales (Servicios SOAP. Dirección General de Catastro)</li></ul>
+    La información que se devuelve puede ser puntual (portales, PK, códigos postales, puntos de interés y referencias catastrales), lineal (viales) y superficial (unidades administrativas y entidades de población).
+    </div>
+
+
+tracker=https://github.com/IDEESpain/PluginQGISCartociudad/issues
+repository=https://github.com/IDEESpain/PluginQGISCartociudad
+
+# End mandatory items
+
+# Recommended items
+changelog= Version 1.0 (Noviembre 2024)
+            - Versión experimental
+
+# Tags
+tags=cartociudad,api,rest,geocoder,localizacion,españa,buscador,direcciones,candidates,find,reverse,ccpp,municipios,poblaciones,locator
+
+homepage=https://github.com/IDEESpain/PluginQGISCartociudad
+category=Plugins
+icon=images/Logo_small.svg

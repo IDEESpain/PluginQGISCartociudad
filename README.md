@@ -44,7 +44,7 @@ Se pueden localizar los siguientes objetos geográficos:
   * Referencias catastrales (Servicios SOAP. Dirección General de Catastro)
  
 La información que se devuelve puede ser **puntual** (portales, PK, códigos postales, puntos de interés y referencias catastrales), **lineal** (viales) y **superficial** (unidades administrativas y entidades de población).
-tiene menú contextual
+
 
 ---
 

@@ -240,7 +240,7 @@ class NameTab(QWidget):
     def create_layer(self, layer_name: str, geometry_type: str, location: Dict[str, Union[str, List[str]]]) -> None:
 
         self.layers[layer_name] = QgsVectorLayer(geometry_type, layer_name, "memory")
-        crs = QgsCoordinateReferenceSystem('EPSG:4258')
+        crs = QgsCoordinateReferenceSystem('EPSG:4326')
         self.layers[layer_name].setCrs(crs)
         self.fields = QgsFields()
         

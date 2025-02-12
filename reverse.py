@@ -357,6 +357,18 @@ class ReverseCoding:
         pr.addFeature(feature)
         layer.updateExtents()
 
+    def reproject_extent(self, extent: QgsRectangle, layer_crs: QgsCoordinateReferenceSystem) -> QgsRectangle:
+        # Definir el sistema de referencia de destino (EPSG:4258)
+        crs_destino = QgsCoordinateReferenceSystem(4258)
+    
+        # Crear el transformador de coordenadas
+        transform = QgsCoordinateTransform(layer_crs, crs_destino, QgsProject.instance())
+    
+        # Transformar el extent
+        extent_transformado = transform.transformBoundingBox(extent)
+    
+        return extent_transformado
+
     def zoom_to_layer(self, layer: QgsVectorLayer) -> None:
         # Centrar el mapa en la capa recién creada
         extent = layer.extent()
@@ -364,10 +376,3 @@ class ReverseCoding:
             extent = self.reproject_extent(extent, layer.crs())
             self.iface.mapCanvas().setExtent(extent)
             self.iface.mapCanvas().refresh()
-
-    def reproject_extent(self, extent, layer_crs: QgsCoordinateReferenceSystem):
-        # Reproyectar la extensión al sistema de coordenadas del proyecto
-        crs_dest = self.iface.mapCanvas().mapSettings().destinationCrs()
-        transform = QgsCoordinateTransform(layer_crs, crs_dest, QgsProject.instance())
-        extent = transform.transformBoundingBox(extent)
-        return extent

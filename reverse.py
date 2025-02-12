@@ -136,8 +136,8 @@ class ReverseCoding:
         self.table_widget.setSelectionMode(QAbstractItemView.MultiSelection)  # Permitir selección múltiple
 
     def handle_map_click(self, point: QgsPointXY) -> None:
-        # Definir el sistema de referencia de destino (EPSG:4258)
-        crs_destino = QgsCoordinateReferenceSystem(4258)
+        # Definir el sistema de referencia de destino (EPSG:4326)
+        crs_destino = QgsCoordinateReferenceSystem(4326)
     
         # Obtener el sistema de referencia del proyecto actual
         crs_proyecto = QgsProject.instance().crs()
@@ -291,7 +291,7 @@ class ReverseCoding:
         if layer_name not in self.layers:
             self.layers[layer_name] = QgsVectorLayer(geometry_type, layer_name, "memory")
             layer = self.layers[layer_name]
-            crs = QgsCoordinateReferenceSystem('EPSG:4258')
+            crs = QgsCoordinateReferenceSystem('EPSG:4326')
             layer.setCrs(crs)
             self.fields = QgsFields()
 
@@ -357,13 +357,10 @@ class ReverseCoding:
         pr.addFeature(feature)
         layer.updateExtents()
 
-    def reproject_extent(self, extent: QgsRectangle, layer_crs: QgsCoordinateReferenceSystem) -> QgsRectangle:
-        # Definir el sistema de referencia de destino (EPSG:4258)
-        crs_destino = QgsCoordinateReferenceSystem(4258)
-    
+    def reproject_extent(self, extent: QgsRectangle, source_crs: QgsCoordinateReferenceSystem, dest_crs: QgsCoordinateReferenceSystem) -> QgsRectangle:
         # Crear el transformador de coordenadas
-        transform = QgsCoordinateTransform(layer_crs, crs_destino, QgsProject.instance())
-    
+        transform = QgsCoordinateTransform(source_crs, dest_crs, QgsProject.instance())
+
         # Transformar el extent
         extent_transformado = transform.transformBoundingBox(extent)
     
@@ -373,6 +370,11 @@ class ReverseCoding:
         # Centrar el mapa en la capa recién creada
         extent = layer.extent()
         if extent:
-            extent = self.reproject_extent(extent, layer.crs())
-            self.iface.mapCanvas().setExtent(extent)
-            self.iface.mapCanvas().refresh()
+            # Obtener el sistema de referencia del proyecto actual
+            project_crs = QgsProject.instance().crs()
+        
+        # Reproyectar el extent al sistema de referencia del proyecto
+            extent = self.reproject_extent(extent, layer.crs(), project_crs)
+        
+        self.iface.mapCanvas().setExtent(extent)
+        self.iface.mapCanvas().refresh()

@@ -5,33 +5,19 @@ from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QHeaderView, QMessageBox,
 from PyQt5.QtCore import Qt, QUrl, QVariant
 from PyQt5 import QtNetwork
 from qgis.gui import QgisInterface, QgsMapToolEmitPoint
-from qgis.core import QgsPointXY, QgsVectorLayer, QgsFeature, QgsGeometry, QgsProject, QgsFields, QgsField, QgsCoordinateReferenceSystem
+from qgis.core import QgsPointXY, QgsVectorLayer, QgsFeature, QgsGeometry, QgsProject, QgsFields, QgsField, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 
 class ReverseTab(QWidget):
-    """
-    ReverseTab is a QWidget subclass used for reverse geocoding in QGIS.
-    This widget allows the user to capture coordinates from a map, search by geographic coordinates (longitude and latitude), and display the 
-    results in a table with options to create a layer from the results.
-    """
     
+    # Widget para hacer el reverse y capturar coordenadas en el mapa y devuelva la dirección o capturar las coordenadas y devuelva dirección
     def __init__(self, parent: QWidget, iface: QgisInterface) -> None:
-        """
-        Initializes the ReverseTab widget.
-
-        Args:
-            parent (QWidget): The parent widget.
-            iface (QgisInterface): The QGIS interface object.
-        """
+   
         super().__init__(parent)
         self.iface = iface
         self.create_layout()
         
     def create_layout(self) -> None:
-        """
-        Creates the layout of the reverse geocoding tab.
-        
-        This includes input fields for coordinates, buttons for capturing and searching coordinates, and a table to display results.
-        """
+
         reverse_layout = QVBoxLayout()
         self.setLayout(reverse_layout)
         
@@ -85,11 +71,7 @@ class ReverseTab(QWidget):
         self.reverse = ReverseCoding(self.reverse_results_table, self.coord_x, self.coord_y, self.iface)
         
     def create_layer(self) -> None:
-        """
-        Creates a new layer in QGIS based on selected rows in the results table.
-        
-        If there are no selected rows, a message is shown. Otherwise, the selected data is used to create a vector layer.
-        """
+ 
         # Obtener los datos necesarios para crear la capa
         selected_rows = self.reverse_results_table.selectionModel().selectedRows()
 
@@ -105,53 +87,32 @@ class ReverseTab(QWidget):
             QMessageBox.warning(None, "¡Atención!", "No hay filas seleccionadas para crear la capa.")
             
     def search_by_reverse(self) -> None:
-        """
-        Searches for address information using reverse geocoding based on input longitude and latitude.
-        
-        This function retrieves the coordinates entered by the user and initiates a reverse geocoding request.
-        """
+
         lon = self.coord_x.text()
         lat = self.coord_y.text()
 
         # Llamar al método de la clase Reverse
         self.reverse.search_by_coordinates(lon, lat)
 
+    #Capturar  coordenadas en mapa
     def capture_coordinates_from_map(self) -> None:
-        """
-        Initiates the process of capturing coordinates directly from the QGIS map canvas.
-        
-        When the map is clicked, the coordinates are retrieved and displayed in the coordinate input fields.
-        """
+
         self.reverse.start_capture()
 
     def clear_table(self) -> None:
-        """
-        Clears all the rows in the results table.
-        """
+ 
         self.reverse.clear_table()
 
     def clear_selection(self) -> None:
-        """
-        Clears the currently selected rows from the results table.
-        """
+
         self.reverse.clear_selection()
 
     
 class ReverseCoding:
-    """
-    A class to handle reverse geocoding operations and manage interactions with the QGIS map.
-    """
+
     
     def __init__(self, table_widget: QTableWidget, coord_x: QLineEdit, coord_y: QLineEdit, iface: QgisInterface) -> None:
-        """
-        Initializes the ReverseCoding class.
 
-        Args:
-            table_widget (QTableWidget): The table widget to display results.
-            coord_x (QLineEdit): The input field for longitude.
-            coord_y (QLineEdit): The input field for latitude.
-            iface (QgisInterface): The QGIS interface object.
-        """
         # Inicializar la clase Reverse con el widget de tabla, cajas de coordenadas y la interfaz de QGIS
         self.table_widget = table_widget  # Referencia a la tabla de resultados
         self.coord_x = coord_x  # Caja de texto para coordenada X (lon)
@@ -170,20 +131,27 @@ class ReverseCoding:
         self.table_widget.horizontalHeader().setStretchLastSection(True)
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        # *** Selección de múltiples filas completas ***
+        # Selección de múltiples filas completas
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # Selección por fila completa
         self.table_widget.setSelectionMode(QAbstractItemView.MultiSelection)  # Permitir selección múltiple
 
     def handle_map_click(self, point: QgsPointXY) -> None:
-        """
-        Handles the event when the user clicks on the QGIS map canvas.
-
-        Args:
-            point (QgsPointXY): The point clicked on the map, containing the longitude and latitude.
-        """
-        # Capturar el clic en el mapa de QGIS y reflejar las coordenadas en las cajas de texto, luego buscar automáticamente
-        lon = point.x()
-        lat = point.y()
+        # Definir el sistema de referencia de destino (EPSG:4258)
+        crs_destino = QgsCoordinateReferenceSystem(4258)
+    
+        # Obtener el sistema de referencia del proyecto actual
+        crs_proyecto = QgsProject.instance().crs()
+    
+        # Crear el transformador de coordenadas
+        transform = QgsCoordinateTransform(crs_proyecto, crs_destino, QgsProject.instance())
+    
+        # Transformar el punto
+        punto_transformado = transform.transform(point)
+    
+        # Capturar las coordenadas transformadas
+        lon = punto_transformado.x()
+        lat = punto_transformado.y()
+    
         if self.coord_x is not None and self.coord_y is not None:
             self.coord_x.setText(str(lon))
             self.coord_y.setText(str(lat))
@@ -193,20 +161,12 @@ class ReverseCoding:
             QMessageBox.critical(None, "Error", "QLineEdit objects have been deleted.")
 
     def start_capture(self) -> None:
-        """
-        Sets the QGIS map tool to capture coordinates when clicked on the map canvas.
-        """
+
         # Método para iniciar la captura de coordenadas desde el mapa
         self.iface.mapCanvas().setMapTool(self.map_tool)
 
     def search_by_coordinates(self, lon: float, lat: float) -> None:
-        """
-        Sends a reverse geocoding request to the CartoCiudad API based on the provided longitude and latitude.
 
-        Args:
-            lon (float): The longitude coordinate.
-            lat (float): The latitude coordinate.
-        """
         # Función para realizar la petición Reverse Geocoding con las coordenadas
         if lon and lat:
             print(f"Buscando por coordenadas Lon: {lon}, Lat: {lat}")
@@ -224,12 +184,7 @@ class ReverseCoding:
             self.network_manager.get(req)  # Hacer la solicitud GET
 
     def handle_reverse_response(self, reply: QtNetwork.QNetworkReply) -> None:
-        """
-        Handles the response from the reverse geocoding request and updates the table with the results.
-
-        Args:
-            reply (QtNetwork.QNetworkReply): The reply object containing the server's response.
-        """
+    
         # Manejar la respuesta del servidor para la búsqueda Reverse Geocoding
         er = reply.error()
         if er == QtNetwork.QNetworkReply.NoError:
@@ -256,12 +211,7 @@ class ReverseCoding:
         self.network_manager.finished.disconnect(self.handle_reverse_response)
 
     def update_table(self, reverse_data: Dict[str, Union[str, int]]) -> None:
-        """
-        Updates the results table with the data received from the reverse geocoding response.
-
-        Args:
-            reverse_data (Dict[str, Union[str, int]]): The dictionary containing the geocoding result data.
-        """
+ 
         # Actualizar la tabla con los resultados obtenidos del Reverse Geocoding
         row_position = self.table_widget.rowCount()
         self.table_widget.insertRow(row_position)
@@ -299,9 +249,7 @@ class ReverseCoding:
         self.table_widget.repaint()  # Redibujar la tabla para forzar el ajuste visual
 
     def update_table_with_no_response(self) -> None:
-        """
-        Updates the table when no response is returned from the API, indicating an error.
-        """
+ 
         # Mostrar una ventana de mensaje cuando no haya respuesta de la API
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Information)
@@ -311,26 +259,13 @@ class ReverseCoding:
         msg_box.exec_()
 
     def clear_table(self) -> None:
-        """Clear all items from the results table and reset stored results.
 
-        This method removes all rows from the QTableWidget associated with
-        this instance and clears the list of results stored in memory.
-        """
         # Limpiar todos los elementos de la tabla
         self.table_widget.setRowCount(0)
         self.results.clear()  # Limpiar los resultados almacenados
 
     def clear_selection(self) -> None:
-        """Remove selected items from the results table.
 
-        This method deletes the currently selected rows from the QTableWidget
-        and ensures that the corresponding entries in the results list are also
-        removed. It sorts the selected rows in reverse order to avoid indexing issues
-        when removing multiple items.
-
-        Attributes:
-            selected_rows (list): List of currently selected rows in the table.
-        """
         # Eliminar los elementos seleccionados en la tabla
         selected_rows = self.table_widget.selectionModel().selectedRows()
         for index in sorted(selected_rows, reverse=True):
@@ -338,18 +273,7 @@ class ReverseCoding:
             del self.results[index.row()]  # Eliminar también de la lista de resultados
 
     def create_reverse_layer(self, layer_name:str, geometry_type: str, selected_indices: List[int]) -> None:
-        """Create or recreate a new layer and add attributes from the JSON response.
 
-        This method checks if a layer with the given name already exists.
-        If it does and it has been deleted, it removes the reference.
-        A new layer is created if it doesn't exist, and attributes are added based on
-        the first selected item. Finally, features are added to the layer.
-
-        Args:
-            layer_name (str): Name of the layer to create or update.
-            geometry_type (str): Type of geometry for the layer (e.g., "Point").
-            selected_indices (List[int]): Indices of the selected results to be added as features.
-        """
         # Crear o recrear una capa nueva y agregar los atributos completos de la respuesta JSON
         # Primero, intentamos eliminar la capa existente si ya fue eliminada en QGIS
         if layer_name in self.layers:
@@ -394,17 +318,7 @@ class ReverseCoding:
         self.zoom_to_layer(layer)
 
     def create_attributes_from_json(self, location: Dict[str, Union[str, int, float]]) -> None:
-        """Create attributes in the layer from JSON response.
 
-        This method defines the attributes for the layer by examining the keys
-        in the provided JSON response while excluding certain attributes
-        such as stateMsg, state, and countryCode. It establishes the field types
-        based on the data type of each attribute.
-
-        Args:
-            location (Dict[str, Union[str, int, float]]): A dictionary representing a single location
-                from the JSON response.
-        """
         # Crear atributos en la capa desde la respuesta JSON, excluyendo stateMsg, state y countryCode
         self.fields = QgsFields()
         excluded_attributes = ['stateMsg', 'state', 'countryCode']  # Atributos a excluir
@@ -421,16 +335,7 @@ class ReverseCoding:
                 self.fields.append(QgsField(attribute, field_type))
 
     def add_feature_to_layer(self, attributes: Dict[str, Union[str, int, float]], layer_name:str) -> None:
-        """Add a feature to the specified layer.
 
-        This method constructs a new feature using the provided attributes
-        and adds it to the specified layer in memory. It excludes certain
-        attributes that are not relevant for the layer.
-
-        Args:
-            attributes (Dict[str, Union[str, int, float]]): A dictionary of attributes for the feature.
-            layer_name (str): Name of the layer to which the feature will be added.
-        """
         # Agregar una característica a la capa
         layer = self.layers[layer_name]
         if layer and layer.isValid():  # Verificar que la capa es válida
@@ -453,16 +358,16 @@ class ReverseCoding:
         layer.updateExtents()
 
     def zoom_to_layer(self, layer: QgsVectorLayer) -> None:
-        """Zoom to the extent of the specified layer.
-
-        This method centers the map on the newly created or updated layer by
-        setting the map canvas extent to the layer's extent and refreshing the canvas.
-
-        Args:
-            layer (QgsVectorLayer): The layer whose extent will be zoomed to.
-        """
         # Centrar el mapa en la capa recién creada
         extent = layer.extent()
         if extent:
+            extent = self.reproject_extent(extent, layer.crs())
             self.iface.mapCanvas().setExtent(extent)
             self.iface.mapCanvas().refresh()
+
+    def reproject_extent(self, extent, layer_crs: QgsCoordinateReferenceSystem):
+        # Reproyectar la extensión al sistema de coordenadas del proyecto
+        crs_dest = self.iface.mapCanvas().mapSettings().destinationCrs()
+        transform = QgsCoordinateTransform(layer_crs, crs_dest, QgsProject.instance())
+        extent = transform.transformBoundingBox(extent)
+        return extent

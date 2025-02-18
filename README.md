@@ -111,12 +111,11 @@ Para ello hay que segur los siguientes pasos:
 
 Hay varias formas de instalar el plugin:
 
-a) Desde QGIS (complementos -> administrar e instalar complementos).
-Si se realiza mediante este punto, es importante habilitar los complementos experimentales para poder utilizarlo (complementos -> administrar e instalar complementos -> configuración -> habilitar también los complementos experimentales). Es así ya que esta versión 1.0 es experimental.
+a) Desde QGIS: En *Complementos -> Administrar e instalar complementos -> Todos* se buscaría por su nombre **Geocoder CartoCiudad**, y se instalaría. 
 
-b) Desde el repositorio oficial de complementos https://plugins.qgis.org/plugins. Se buscaría el plugin *Geocoder CartoCiudad*, se descargaría y se importaría desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
+b) Desde el repositorio oficial de complementos: [*Geocoder CartoCiudad*](https://plugins.qgis.org/plugins/PluginQGISCartociudad-main/). Se descargaría y se importaría desde QGIS en *Complementos -> Administrar e instalar complementos -> Instalar a partir de zip.*
 
-c) Desde este repositorio, en la parte de despliegues (releases): https://github.com/IDEESpain/PluginQGISCartociudad/releases. Una vez descargado, se instalaría en QGIS desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
+c) Desde este repositorio, en la parte de despliegues [releases](https://github.com/IDEESpain/PluginQGISCartociudad/releases). Una vez descargado el zip, se instalaría en QGIS desde *Complementos -> Administrar e instalar complementos -> Instalar a partir de zip.*
 
 ---
 

@@ -25,7 +25,7 @@ Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y desc
 
 ## 🛠 Funcionalidades <a name="funcionalidades"></a>
 
-Este complemento permiete **localizar** y **descargar** objetos geográficos de España por identificadores geográficos y/o por coordenadas geográficas. 
+Este complemento permite **localizar** y **descargar** objetos geográficos de España por identificadores geográficos y/o por coordenadas geográficas. 
 
 Se pueden localizar los siguientes objetos geográficos:
  

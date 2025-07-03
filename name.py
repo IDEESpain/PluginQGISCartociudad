@@ -1,3 +1,4 @@
+import os
 import json
 from typing import List, Dict, Any, Union, Optional
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QTableWidget, QTableWidgetItem, QAbstractItemView, QMessageBox
@@ -6,8 +7,8 @@ from PyQt5.QtGui import QBrush, QColor
 from PyQt5 import QtNetwork
 from PyQt5.QtWidgets import QHeaderView
 from qgis.gui import QgisInterface
-from qgis.core import (QgsProject, QgsCoordinateReferenceSystem,QgsCoordinateTransform,
-                       QgsVectorLayer, QgsGeometry, QgsFeature, QgsFields, QgsField, QgsWkbTypes)
+from qgis.core import (QgsProject, QgsApplication, QgsCoordinateReferenceSystem,QgsCoordinateTransform,
+                       QgsVectorLayer, QgsGeometry, QgsFeature, QgsFields, QgsField, QgsWkbTypes, QgsLayerTreeLayer, QgsSymbol, QgsSingleSymbolRenderer)
 
 
 LIMIT = 35
@@ -17,6 +18,15 @@ class NameTab(QWidget):
     def __init__(self, parent: QWidget, iface: QgisInterface) -> None:
 
         super().__init__(parent)
+
+        # Añadir carpeta SVG personalizada a las rutas de QGIS
+        base_path = os.path.dirname(__file__)
+        svg_path = os.path.join(base_path, 'estilos','svg')
+        svg_paths = QgsApplication.svgPaths()
+        if svg_path not in svg_paths:
+            svg_paths.append(svg_path)
+            QgsApplication.setDefaultSvgPaths(svg_paths)
+        print(QgsApplication.svgPaths())
         self.iface = iface
         self.layers = {}
         self.create_layout()
@@ -50,7 +60,7 @@ class NameTab(QWidget):
         self.tabla_resultados.setHorizontalHeaderLabels(['Candidatos', 'Tipo'])
 
         # Configurar la selección para que sea por fila completa
-        self.tabla_resultados.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tabla_resultados.setSelectionBehavior(QAbstractItemView.SelectItems)
         self.tabla_resultados.setSelectionMode(QAbstractItemView.SingleSelection)
 
         # Ajustar el comportamiento de las columnas para que se expandan
@@ -62,9 +72,13 @@ class NameTab(QWidget):
 
         # Conectar el botón de búsqueda a la función
         self.buscar.clicked.connect(self.on_search_name)
+        self.localizacion.returnPressed.connect(self.on_search_name) 
+        self.cp.returnPressed.connect(self.on_search_name)
         # Conectar el evento de doble clic en la celda y número de fila
         self.tabla_resultados.cellDoubleClicked.connect(self.find_location)
         self.tabla_resultados.verticalHeader().sectionDoubleClicked.connect(self.handle_row_double_click)
+        # Resaltar la columna de tipo al seleccionar una fila:
+        self.tabla_resultados.itemSelectionChanged.connect(self.highlight_tipo_column)
 
     def on_search_name(self) -> None:
 
@@ -166,7 +180,7 @@ class NameTab(QWidget):
         # También obtenemos el valor del tipo de la celda correspondiente
         candidate_type = self.tabla_resultados.item(row, 1).text()
         # Construimos la URL con la dirección, el id y el tipo
-        url = f'{API_GEOCODER}/find?q={address}&id={candidate_id}&type={candidate_type}'
+        url = f'{API_GEOCODER}/find?id={candidate_id}&type={candidate_type}'
         self.get_location(url)
         print(f'Buscar: {url}')
 
@@ -198,59 +212,151 @@ class NameTab(QWidget):
             self.handle_location(location)
 
     def handle_location(self, location: Dict[str, Union[Any, List[Any]]]) -> None:
-
         wkt = location['geom']
         location_type = location['type']
         new_geometry_type = self.get_geometry_type(wkt)
 
-        # Definir el nombre de la capa según el tipo
-        if location_type in ['callejero', 'carretera']:
-            layer_name = 'Viales'
-        elif location_type in ['expendeduria', 'punto_recarga_electrica', 'ngbe', 'toponimo']:
-            layer_name = 'Puntos_interes'
-        elif location_type == 'poblacion':
-            layer_name = 'Poblaciones'
-        elif location_type == 'portal':
-            layer_name = 'Portales_pk'
-        elif location_type == 'Municipio':
-            layer_name = 'Municipios'
-        elif location_type == 'provincia':
-            layer_name = 'Provincias'
-        elif location_type == 'comunidad autonoma':
-            layer_name = 'Comunidades_sim'
-        elif location_type == 'Codpost':
-            layer_name = 'Codigos_postales'
-        elif location_type == 'refcatastral':
-            layer_name = 'Referencia_catastral'
-        else:
-            QMessageBox.warning(None, "¡Atención!", f"Tipo no reconocido: {location_type}")
-            return
-
-        # Verificar si la capa aún existe
-        if layer_name in self.layers and not QgsProject.instance().mapLayersByName(layer_name):
-            del self.layers[layer_name]  # Eliminar la referencia a la capa eliminada
-
-        # Crear la capa si no existe
-        if layer_name not in self.layers or self.layers[layer_name] is None:
-            self.create_layer(layer_name, new_geometry_type, location)
+        # Crear la capa (si no existe) y obtener su nombre
+        layer_name = self.create_layer(new_geometry_type, location)
 
         # Agregar la geometría a la capa correspondiente
         self.add_feature_to_layer(location, layer_name)
 
-    def create_layer(self, layer_name: str, geometry_type: str, location: Dict[str, Union[str, List[str]]]) -> None:
+    
+    
+    def create_layer(self, geometry_type: str, location: Dict[str, Union[str, List[str]]]) -> str:
+        location_type = location.get("type", "").lower()
+        location_address = location.get("address")
 
-        self.layers[layer_name] = QgsVectorLayer(geometry_type, layer_name, "memory")
+        if not location_type:
+            raise ValueError("El campo 'type' no está definido en la ubicación.")
+
+        grupos = {
+            'callejero': 'Viales',
+            'carretera': 'Viales',
+            'expendeduria': 'Puntos_interes',
+            'punto_recarga_electrica': 'Puntos_interes',
+            'ngbe': 'Puntos_interes',
+            'toponimo': 'Puntos_interes',
+            'poblacion': 'Poblaciones',
+            'portal': 'Portales_pk',
+            'municipio': 'Municipios',
+            'provincia': 'Provincias',
+            'comunidad autonoma': 'Comunidades_sim',
+            'codpost': 'Codigos_postales',
+            'refcatastral': 'Referencia_catastral'
+        }
+
+        group_name = grupos.get(location_type, "Otro")
+
+        # Obtener o crear el grupo en el panel de capas
+        root = QgsProject.instance().layerTreeRoot()
+        group = root.findGroup(group_name)
+        if group is None:
+            group = root.addGroup(group_name)
+
+        # Obtener nombres de capas solo dentro de este grupo
+        group_layer_names = [child.layer().name() for child in group.children() if isinstance(child, QgsLayerTreeLayer)]
+
+        # Personalización del nombre según el grupo
+        if group_name in "Municipios":
+            municipio = (location.get("muni") or "").strip().replace(" ", "_") 
+            base_name = f"{municipio}_{location_type}"
+        elif group_name == "Poblaciones":
+            poblacion = (location.get("poblacion") or "").strip().replace(" ", "_")
+            base_name = f"{poblacion}_{location_type}"
+        elif group_name == "Provincias":
+            provincia = (location.get("province") or "").strip().replace(" ", "_")
+            base_name = f"{provincia}_{location_type}"
+        elif group_name == "Viales":
+            tip_via = (location.get("tip_via") or "").strip().replace(" ", "_")
+            poblacion = (location.get("poblacion") or "").strip().replace(" ", "_")
+            base_name = f"{tip_via}_{location_address}_{poblacion}"
+        elif group_name == "Codigos_postales":
+            cod_postal = (location.get("postalCode") or "").strip().replace(" ", "_")  
+            base_name = f"{cod_postal}" 
+        elif group_name == "Portales_pk":
+            tip_via = (location.get("tip_via") or "").strip().replace(" ", "_")
+            portal = str(location.get("portalNumber") or "").strip().replace(" ", "_")
+            poblacion = (location.get("poblacion") or "").strip().replace(" ", "_")
+            base_name = f"{tip_via}_{location_address}_{portal}_{poblacion}"
+        else:
+            base_name = str(location_address).strip().replace(" ", "_") if location_address else "Sin_nombre"
+
+        # Asegurar nombre único dentro del grupo
+        layer_name = base_name
+        i = 1
+        while layer_name in group_layer_names:
+            i += 1
+            layer_name = f"{base_name}_{i}"
+
+        # Si ya existe en self.layers, no crearla de nuevo
+        if layer_name in self.layers and self.layers[layer_name] is not None:
+            return layer_name
+
+        # Crear la capa
+        layer = QgsVectorLayer(geometry_type, layer_name, "memory")
         crs = QgsCoordinateReferenceSystem('EPSG:4326')
-        self.layers[layer_name].setCrs(crs)
+        layer.setCrs(crs)
+
+        # Aplicar estilo QML si existe
+        base_path = os.path.dirname(__file__)
+
+        estilo_por_grupo = {
+            'Viales': {
+                'carretera': os.path.join(base_path, 'estilos', 'Carretera_Viales.qml'),
+                'callejero': os.path.join(base_path, 'estilos', 'Callejero_Viales.qml')
+            },
+            'Puntos_interes': {
+                'expendeduria': os.path.join(base_path, 'estilos', 'Puntos_interes_expendeduria.qml'),
+                'punto_recarga_electrica': os.path.join(base_path, 'estilos', 'Puntos_interes_recarga.qml'),
+                'ngbe': os.path.join(base_path, 'estilos', 'Puntos_interes_ngbe.qml'),
+                'toponimo': os.path.join(base_path, 'estilos', 'Puntos_interes_toponimo.qml')
+            },
+            'Poblaciones': os.path.join(base_path, 'estilos', 'Poblaciones.qml'),
+            'Portales_pk': os.path.join(base_path, 'estilos', 'Portales_pk.qml'),
+            'Municipios': os.path.join(base_path, 'estilos', 'Municipios.qml'),
+            'Provincias': os.path.join(base_path, 'estilos', 'Provincias.qml'),
+            'Comunidades_sim': os.path.join(base_path, 'estilos', 'Comunidades_sim.qml'),
+            'Codigos_postales': os.path.join(base_path, 'estilos', 'Codigos_postales.qml'),
+            'Referencia_catastral': os.path.join(base_path, 'estilos', 'Referencia_catastral.qml')
+        }
+
+        _path = None
+        if group_name in ['Viales', 'Puntos_interes']:
+            qml_dict = estilo_por_grupo.get(group_name, {})
+            qml_path = qml_dict.get(location_type)
+        else:
+            qml_path = estilo_por_grupo.get(group_name)
+
+        if qml_path and os.path.exists(qml_path):
+            layer.loadNamedStyle(qml_path)
+            layer.triggerRepaint()
+
+        # Crear los campos desde los atributos del JSON
         self.fields = QgsFields()
-        
-        # Excluir los atributos no deseados: 'stateMsg', 'state' y 'countryCode'
-        self.create_attributes_from_json(location, exclude_keys=['stateMsg', 'state', 'countryCode'])
+        self.create_attributes_from_json(location, exclude_keys=['geom', 'stateMsg', 'state', 'countryCode', 'noNumber'])
+
+        # Añadir los campos a la capa
+        layer.dataProvider().addAttributes(self.fields)
+        layer.updateFields()
+
+        # Guardar la capa
+        self.layers[layer_name] = layer
+        QgsProject.instance().addMapLayer(layer, False)
+
+        # Añadir al grupo correspondiente
+        group.addLayer(layer)
+
+        return layer_name
+
+
+
         
         pr = self.layers[layer_name].dataProvider()
         pr.addAttributes(self.fields)
         self.layers[layer_name].updateFields()
-        QgsProject.instance().addMapLayer(self.layers[layer_name])
+        # QgsProject.instance().addMapLayer(self.layers[layer_name])
 
     def get_geometry_type(self, wkt: str) -> str:
 
@@ -273,54 +379,56 @@ class NameTab(QWidget):
 
         if exclude_keys is None:
             exclude_keys = []
-
+        
         for attribute, value in location.items():
             # Excluir los atributos específicos
             if attribute not in exclude_keys and attribute != 'geom':
                 self.fields.append(QgsField(attribute, QVariant.String))
 
     def add_feature_to_layer(self, attributes: Dict[str, Union[Any, List[Any]]], layer_name: str) -> None:
-        # Agregar una característica (punto o polígono) a la capa y hacer zoom en esa geometría
         layer = self.layers.get(layer_name)
-        if layer and layer.isValid():  # Verificar que la capa es válida
-            feature = QgsFeature()
-            feature.setFields(self.fields)
 
-            for attribute, value in attributes.items():
-                if attribute == 'geom':
-                    geom = QgsGeometry.fromWkt(value)
+        # Si la capa no existe o ha sido eliminada, la recreamos automáticamente
+        if (
+            layer is None
+            or not QgsProject.instance().mapLayersByName(layer_name)
+            or not layer.isValid()
+        ):
+            # Eliminar referencia interna si la capa ya no existe
+            if layer_name in self.layers:
+                del self.layers[layer_name]
+            # Recrear la capa usando los atributos actuales
+            geometry_type = self.get_geometry_type(attributes['geom'])
+            layer_name = self.create_layer(geometry_type, attributes)
+            layer = self.layers[layer_name]
 
-                    # Verificar si la geometría es válida
+        # Agregar una característica (punto o polígono) a la capa y hacer zoom en esa geometría
+        feature = QgsFeature()
+        feature.setFields(layer.fields())
+
+        for attribute, value in attributes.items():
+            if attribute == 'geom':
+                geom = QgsGeometry.fromWkt(value)
+                if not geom.isGeosValid():
+                    print(f"Geometría no válida detectada. Intentando corregir...")
+                    geom = geom.buffer(0, 5)
                     if not geom.isGeosValid():
-                        print(f"Geometría no válida detectada. Intentando corregir...")
-
-                        # Aplicar una corrección básica para corregir autointersecciones
-                        geom = geom.buffer(0, 5)  # Esto puede corregir intersecciones propias
-
-                        # Validar de nuevo después de la corrección
-                        if not geom.isGeosValid():
-                            QMessageBox.warning(None, "¡Atención!", "La geometría no es válida.")
-                            print("La geometría sigue siendo inválida después de la corrección.")
-                            return  # Si sigue siendo inválida, no continuar
-
-                    # Asignar la geometría al feature
-                    feature.setGeometry(geom)
-
-                else:
-                    # Verificar que el atributo existe en los campos antes de asignarlo
-                    if attribute in [field.name() for field in self.fields]:
-                        feature.setAttribute(attribute, str(value))
-
-            # Añadir el feature solo una vez, después de procesar los atributos y geometría
-            pr = layer.dataProvider()
-            pr.addFeature(feature)
-            layer.updateExtents()
-
-            # Si la geometría es válida, hacer zoom a su extensión
-            if geom.wkbType() in [QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon]:
-                self.zoom_to_bounding_box(geom, layer.crs())
+                        QMessageBox.warning(None, "¡Atención!", "La geometría no es válida.")
+                        print("La geometría sigue siendo inválida después de la corrección.")
+                        return
+                feature.setGeometry(geom)
             else:
-                self.zoom_to_geometry(geom, layer.crs())
+                if attribute in [field.name() for field in layer.fields()]:
+                    feature.setAttribute(attribute, str(value))
+
+        pr = layer.dataProvider()
+        pr.addFeature(feature)
+        layer.updateExtents()
+
+        if geom.wkbType() in [QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon]:
+            self.zoom_to_bounding_box(geom, layer.crs())
+        else:
+            self.zoom_to_geometry(geom, layer.crs())
 
     def zoom_to_bounding_box(self, geom: QgsGeometry, layer_crs: QgsCoordinateReferenceSystem) -> None:
         # Calcular y hacer zoom al bounding box de la geometría (polígono o multipolígono)
@@ -344,3 +452,35 @@ class NameTab(QWidget):
         transform = QgsCoordinateTransform(layer_crs, crs_dest, QgsProject.instance())
         geom.transform(transform)
         return geom
+
+
+
+    def highlight_tipo_column(self):
+        # Limpia el fondo y el color de texto de todas las celdas de la columna "Tipo"
+        for row in range(self.tabla_resultados.rowCount()):
+            item = self.tabla_resultados.item(row, 1)
+            if item:
+                item.setBackground(QBrush())
+                item.setForeground(QBrush())
+
+        # Por defecto, encabezado "Tipo" no en negrita
+        header = self.tabla_resultados.horizontalHeaderItem(1)
+        if header:
+            font = header.font()
+            font.setBold(False)
+            header.setFont(font)
+
+        selected_items = self.tabla_resultados.selectedItems()
+        if selected_items:
+            selected_item = selected_items[0]
+            row = selected_item.row()
+            col = selected_item.column()
+            tipo_item = self.tabla_resultados.item(row, 1)
+            if tipo_item:
+                selection_color = self.tabla_resultados.palette().color(self.tabla_resultados.palette().Highlight)
+                tipo_item.setBackground(QBrush(selection_color))
+                tipo_item.setForeground(QBrush(QColor(255, 255, 255)))
+            # Si la celda seleccionada es de la columna "Candidatos", poner encabezado "Tipo" en negrita
+            if col == 0 and header:
+                font.setBold(True)
+                header.setFont(font)

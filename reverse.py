@@ -1,11 +1,12 @@
 import json
+import os
 from typing import List, Dict, Union
 
 from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QHeaderView, QMessageBox, QAbstractItemView, QPushButton, QVBoxLayout, QHBoxLayout, QLineEdit, QTableWidget, QMessageBox
 from PyQt5.QtCore import Qt, QUrl, QVariant
 from PyQt5 import QtNetwork
 from qgis.gui import QgisInterface, QgsMapToolEmitPoint
-from qgis.core import QgsPointXY, QgsVectorLayer, QgsFeature, QgsGeometry, QgsProject, QgsFields, QgsField, QgsCoordinateReferenceSystem, QgsCoordinateTransform
+from qgis.core import QgsPointXY, QgsVectorLayer, QgsFeature, QgsGeometry, QgsProject, QgsFields, QgsField, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsRectangle, QgsLayerTreeLayer
 
 class ReverseTab(QWidget):
     
@@ -25,17 +26,21 @@ class ReverseTab(QWidget):
         capture_button = QPushButton("Capturar coordenadas del mapa")
         capture_button.clicked.connect(self.capture_coordinates_from_map)
         reverse_layout.addWidget(capture_button)
+       
 
         # Botón para buscar por coordenadas
         search_button = QPushButton("Buscar por coordenadas")
         search_button.clicked.connect(self.search_by_reverse)
         reverse_layout.addWidget(search_button)
+        
 
         # Fila para las coordenadas X e Y
         input_layout = QHBoxLayout()
         self.coord_x = QLineEdit()
+        self.coord_x.returnPressed.connect(self.search_by_reverse)
         self.coord_x.setPlaceholderText("Introduzca longitud geográfica")
         self.coord_y = QLineEdit()
+        self.coord_y.returnPressed.connect(self.search_by_reverse)
         self.coord_y.setPlaceholderText("Introduzca latitud geográfica")
         input_layout.addWidget(self.coord_x)
         input_layout.addWidget(self.coord_y)
@@ -60,6 +65,11 @@ class ReverseTab(QWidget):
         clear_selection_button.clicked.connect(self.clear_selection)
         buttons_layout.addWidget(clear_selection_button)
 
+        # Botón "Seleccionar todo"
+        select_all_button = QPushButton("(De)Seleccionar todo")
+        select_all_button.clicked.connect(self.select_all_rows)
+        buttons_layout.addWidget(select_all_button)
+
         # Botón "Crear capa"
         create_layer_button = QPushButton("Crear capa")
         create_layer_button.clicked.connect(self.create_layer)
@@ -68,28 +78,51 @@ class ReverseTab(QWidget):
         reverse_layout.addLayout(buttons_layout)
 
         # Inicializar la clase Reverse con la tabla de resultados
-        self.reverse = ReverseCoding(self.reverse_results_table, self.coord_x, self.coord_y, self.iface)
         
+        self.reverse_results = []
+        self.reverse = ReverseCoding(self.reverse_results_table, self.coord_x, self.coord_y, self.iface, self.reverse_results)
+
+    def select_all_rows(self) -> None:
+        selected_rows = self.reverse_results_table.selectionModel().selectedRows()
+        if selected_rows:
+            # Si hay alguna fila seleccionada, deselecciona todas
+            self.reverse_results_table.clearSelection()
+        else:
+            # Si no hay ninguna seleccionada, selecciona todas
+            for row in range(self.reverse_results_table.rowCount()):
+                self.reverse_results_table.selectRow(row)
+
+
+
     def create_layer(self) -> None:
- 
         # Obtener los datos necesarios para crear la capa
         selected_rows = self.reverse_results_table.selectionModel().selectedRows()
 
         if selected_rows:
             selected_indices = [index.row() for index in selected_rows]
-            # Definir el nombre de la capa y el tipo de geometría
+            # Definir el nombre base de la capa y el tipo de geometría
             layer_name = "resultados reverse"
             geometry_type = "Point"
 
-            # Llamar a create_reverse_layer en Reverse con los índices de las ubicaciones seleccionadas
+            # Llamar al método que crea las capas individuales
             self.reverse.create_reverse_layer(layer_name, geometry_type, selected_indices)
         else:
             QMessageBox.warning(None, "¡Atención!", "No hay filas seleccionadas para crear la capa.")
+
+        
+        print("Tamaño de reverse_results:", len(self.reverse_results))
+        print("Índices seleccionados:", selected_indices)
+
             
     def search_by_reverse(self) -> None:
 
-        lon = self.coord_x.text()
-        lat = self.coord_y.text()
+        lon = self.coord_x.text().replace(',', '.')
+        lat = self.coord_y.text().replace(',', '.')
+        if lon and lat:
+            self.reverse.search_by_coordinates(lon, lat)
+        else:
+            QMessageBox.warning(self, "Campos incompletos", "Debe introducir ambas coordenadas.")
+
 
         # Llamar al método de la clase Reverse
         self.reverse.search_by_coordinates(lon, lat)
@@ -111,7 +144,7 @@ class ReverseTab(QWidget):
 class ReverseCoding:
 
     
-    def __init__(self, table_widget: QTableWidget, coord_x: QLineEdit, coord_y: QLineEdit, iface: QgisInterface) -> None:
+    def __init__(self, table_widget: QTableWidget, coord_x: QLineEdit, coord_y: QLineEdit, iface: QgisInterface, reverse_results: list) -> None:
 
         # Inicializar la clase Reverse con el widget de tabla, cajas de coordenadas y la interfaz de QGIS
         self.table_widget = table_widget  # Referencia a la tabla de resultados
@@ -122,6 +155,7 @@ class ReverseCoding:
         self.layers = {}  # Diccionario para manejar las capas dinámicamente
         self.fields = None
         self.results = []  # Lista para almacenar los resultados de la petición
+        self.reverse_results = reverse_results
         
         # Habilitar el uso del clic en el mapa de QGIS para capturar coordenadas
         self.map_tool = QgsMapToolEmitPoint(self.iface.mapCanvas())
@@ -197,10 +231,22 @@ class ReverseCoding:
                 self.update_table_with_no_response()
                 return
 
-            try:
+            try: 
                 reverse_data = json.loads(response)
-                self.results.append(reverse_data)  # Almacenar el resultado
+
+            # Añadir coordenadas desde los campos de texto
+                try:
+                    reverse_data["x"] = float(self.coord_x.text().replace(',', '.'))
+                    reverse_data["y"] = float(self.coord_y.text().replace(',', '.'))
+                    # reverse_data["x"] = float(self.coord_x.text())
+                    # reverse_data["y"] = float(self.coord_y.text())
+                except ValueError:
+                    reverse_data["x"] = None
+                    reverse_data["y"] = None
+
+                self.results.append(reverse_data)
                 self.update_table(reverse_data)
+
             except json.JSONDecodeError as e:
                 QMessageBox.critical(None, "Error", f"Error al decodificar la respuesta JSON: {e}")
         else:
@@ -240,6 +286,8 @@ class ReverseCoding:
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)  # Hacer los items no editables
             self.table_widget.setItem(row_position, col, item)
 
+        self.reverse_results.append(reverse_data)
+
         # Ajuste explícito de la última columna
         self.table_widget.horizontalHeader().setStretchLastSection(True)
 
@@ -272,50 +320,87 @@ class ReverseCoding:
             self.table_widget.removeRow(index.row())
             del self.results[index.row()]  # Eliminar también de la lista de resultados
 
-    def create_reverse_layer(self, layer_name:str, geometry_type: str, selected_indices: List[int]) -> None:
+    def create_reverse_layer(self, base_layer_name, geometry_type, selected_indices):
 
-        # Crear o recrear una capa nueva y agregar los atributos completos de la respuesta JSON
-        # Primero, intentamos eliminar la capa existente si ya fue eliminada en QGIS
-        if layer_name in self.layers:
-            try:
-                # Intentar acceder a la capa, si ha sido eliminada, esto lanzará una excepción
-                layer = self.layers[layer_name]
-                if not QgsProject.instance().mapLayer(layer.id()):
-                    raise RuntimeError("La capa ha sido eliminada")
-            except RuntimeError:
-                # Si se captura el error, eliminamos la referencia a la capa
-                del self.layers[layer_name]
-                layer = None
+         # Campos a excluir
+        excluded_attributes = ['state', 'stateMsg', 'countryCode', 'x', 'y', 'noNumber']
 
-        # Crear una nueva capa si no existe o si fue eliminada
-        if layer_name not in self.layers:
-            self.layers[layer_name] = QgsVectorLayer(geometry_type, layer_name, "memory")
-            layer = self.layers[layer_name]
-            crs = QgsCoordinateReferenceSystem('EPSG:4326')
-            layer.setCrs(crs)
-            self.fields = QgsFields()
+        # Crear o obtener el grupo "reverse"
+        root = QgsProject.instance().layerTreeRoot()
+        group = root.findGroup("Resultados_reverse")
+        if not group:
+            group = root.addGroup("Resultados_reverse")
 
-            # Crear los atributos usando la primera selección para definir la estructura de la capa
-            if selected_indices:
-                self.create_attributes_from_json(self.results[selected_indices[0]])
+        last_layer = None  # Para guardar la última capa creada
 
-            pr = layer.dataProvider()
-            pr.addAttributes(self.fields)
-            layer.updateFields()
-            QgsProject.instance().addMapLayer(layer)
-        else:
-            layer = self.layers[layer_name]
-
-        # Agregar características a la capa existente o nueva
         for index in selected_indices:
-            location = self.results[index]
-            self.add_feature_to_layer(location, layer_name)
+            data = self.reverse_results[index] 
+            if data is None:
+                print(f"Datos no disponibles para el índice {index}")
+                continue
+                
+            tip_via = str(data.get("tip_via", "")).strip().replace(" ", "_")
+            address = str(data.get("address", "")).strip().replace(" ", "_")
+            portalNumber = str(data.get("portalNumber", "")).strip().replace(" ", "_")
+            poblacion = str(data.get("poblacion", "")).strip().replace(" ", "_")
 
-        # Asegúrate de que la extensión se actualice correctamente
-        layer.updateExtents()
+            # Construir el nombre de la capa
+            layer_name = f"{tip_via}_{address}_{portalNumber}_{poblacion}"
+            if not layer_name or layer_name == "___":
+                layer_name = "Sin_nombre"
+            
+            # Crear la capa de memoria con todos los atributos menos los excluidos
+            layer = QgsVectorLayer("Point?crs=EPSG:4326", layer_name, "memory")
+            pr = layer.dataProvider()
 
-        # Realiza el zoom a la capa recién creada o actualizada
-        self.zoom_to_layer(layer)
+            # Crear campos dinámicamente según los atributos del JSON, excluyendo los no deseados
+            fields = QgsFields()
+            for key, value in data.items():
+                if key in excluded_attributes or key == "geom":
+                    continue
+                if isinstance(value, int):
+                    field_type = QVariant.Int
+                elif isinstance(value, float):
+                    field_type = QVariant.Double
+                elif isinstance(value, bool):
+                    field_type = QVariant.Bool
+                else:
+                    field_type = QVariant.String
+                fields.append(QgsField(key, type=field_type))
+            pr.addAttributes(fields)
+            layer.updateFields()
+
+            # Aplicar estilo QML si existe
+            base_path = os.path.dirname(__file__)
+            qml_path = os.path.join(base_path, 'estilos', 'Reverse.qml')  # Cambia por tu archivo QML
+            if os.path.exists(qml_path):
+                layer.loadNamedStyle(qml_path)
+                layer.triggerRepaint()
+
+
+            # Intentar obtener las coordenadas x e y, manejando posibles errores
+            try:
+                x = float(data.get("x"))
+                y = float(data.get("y"))
+            except (TypeError, ValueError):
+                print(f"Coordenadas inválidas en la fila {index}: x={data.get('x')}, y={data.get('y')}")
+                continue
+
+            feature = QgsFeature()
+            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(x, y)))
+        
+           # Asignar todos los atributos en el mismo orden que los campos
+            feature.setAttributes([data.get(field.name(), "") for field in fields])
+            pr.addFeature(feature)
+            layer.updateExtents()
+
+            QgsProject.instance().addMapLayer(layer, False)
+            group.insertChildNode(0, QgsLayerTreeLayer(layer))
+            last_layer = layer  # Guarda la referencia a la última capa creada
+
+        # Al final del bucle, haz zoom solo una vez
+        if last_layer is not None:
+            self.zoom_to_layer(last_layer)
 
     def create_attributes_from_json(self, location: Dict[str, Union[str, int, float]]) -> None:
 
@@ -332,7 +417,7 @@ class ReverseCoding:
                     field_type = QVariant.Bool
                 else:
                     field_type = QVariant.String
-                self.fields.append(QgsField(attribute, field_type))
+                self.fields.append(QgsField(attribute, type=field_type))
 
     def add_feature_to_layer(self, attributes: Dict[str, Union[str, int, float]], layer_name:str) -> None:
 
@@ -357,6 +442,7 @@ class ReverseCoding:
         pr.addFeature(feature)
         layer.updateExtents()
 
+
     def reproject_extent(self, extent: QgsRectangle, source_crs: QgsCoordinateReferenceSystem, dest_crs: QgsCoordinateReferenceSystem) -> QgsRectangle:
         # Crear el transformador de coordenadas
         transform = QgsCoordinateTransform(source_crs, dest_crs, QgsProject.instance())
@@ -378,3 +464,5 @@ class ReverseCoding:
         
         self.iface.mapCanvas().setExtent(extent)
         self.iface.mapCanvas().refresh()
+
+

@@ -3,7 +3,7 @@
 [general]
 name=Geocoder CartoCiudad
 description= CartoCiudad ofrece direcciones postales, topónimos, poblaciones y límites administrativos de España
-version=1.1
+version=1.2
 qgisMinimumVersion=3.9
 author=Equipo CartoCiudad
 email=cartociudad@transportes.gob.es
@@ -32,6 +32,18 @@ changelog= Version 1.0 (Noviembre 2024)
 	       Versión 1.1 (Febrero 2025)
 	        - Versión no experimental
 	        - Arreglo: Usar el plugin en cualquier Sistema de Referencia de Coordenadas
+            Versión 1.2 (Julio 2025)
+	        - Nuevas funcionalidades: 
+		        - Generación de grupos de capas por tipo de elemento
+		        - Simbología, etiquetas y nombre específico por tipología de capa
+                - Añade números en el nombre de la capa cuando tienen el mismo nombre
+                - Permite pulsar la tecla Enter para hacer las búsquedas
+                - Nuevo botón para seleccionar/deseleccionar todos los candidatos de la búsqueda por coordenadas
+		        - Pestaña de información inicial y ayuda en las herramientas
+	        - Arreglos: 
+                - Introducir las coordenadas con el separador de decimales con punto o coma
+                - Eliminación campo noNumber en la tabla de atributos
+		        - Aspectos visuales
 
 # Tags
 tags=cartociudad,api,rest,geocoder,localizacion,españa,buscador,direcciones,candidates,find,reverse,ccpp,municipios,poblaciones,locator

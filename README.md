@@ -25,7 +25,7 @@ Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y desc
 
 ## 🛠 Funcionalidades <a name="funcionalidades"></a>
 
-Este complemento permite **localizar** y **descargar** objetos geográficos de España por identificadores geográficos y/o por coordenadas geográficas. 
+Este complemento permiete **localizar** y **descargar** objetos geográficos de España por identificadores geográficos y/o por coordenadas geográficas. 
 
 Se pueden localizar los siguientes objetos geográficos:
  
@@ -44,27 +44,38 @@ Se pueden localizar los siguientes objetos geográficos:
   * Referencias catastrales (Servicios SOAP. Dirección General de Catastro)
  
 La información que se devuelve puede ser **puntual** (portales, PK, códigos postales, puntos de interés y referencias catastrales), **lineal** (viales) y **superficial** (unidades administrativas y entidades de población).
-
+tiene menú contextual
 
 ---
 
-### 🔸Localicación por nombre geográfico <a name="nombregeografico"></a>
+### 🔸Localización por nombre geográfico <a name="nombregeografico"></a>
 
 [👆 Volver](#contenidos)
 
 Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad.
 
-Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*
+Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*. Una vez escrita la dirección se le puede dar al botón de *Buscar* o a la tecla *Enter*.
 
  *Ejemplo de búsqueda de un vial*:
 
 ![Ejemplo busqueda](docs/ejemplo_ng.png)
 
+Ahora las capas se añaden en su grupo según la tipología, en este caso Viales, y la capa se nombra con el tipo de vía, el nombre de la vía y la población en la que se encuentra. Otras tipologías de elementos se nombran de otras formas según se requiera. Por ejemplo, las capas dentro del grupo de la tipología códigos postales solo se nombran con el código postal. 
+
+Además, las capas se representan con un estilo determinado según la tipología del elemento y tiene activadas las etiquetas que coinciden con el nombre de la capa. En el caso de expendedurías y puntos de recarga los símbolos son iconos concretos.
+
+Otra mejora es que se pueden hacer varias capas del mismo candidato y en el nombre se añadirá un número al final.
+
+También, ahora, aunque se cierre la pestaña del Plugin de CartoCiudad y se busque de nuevo no se generan nuevos grupos si no que las capas se añaden a los existentes.
+
+
+
+
 
 🔹 **Búsqueda de un elemento filtrando por código postal**
 
 Permite realizar una búsqueda de cualquier elemento geográfico contenido en un código postal. 
-Para ello hay que introducir el elemento a buscar y además hay que añadir en *Filtrar por código postal* el número del código postal deseado. Así mismo, se puede filtrar por varios códigos postales, y para ello, hay que introducirlos seguidos de comas y sin espacios.
+Para ello hay que introducir el elemento a buscar y además hay que añadir en *Filtrar por código postal* el número del código postal deseado. Así mismo, se puede filtrar por varios códigos postales, y para ello, hay que introducirlos seguidos de comas y sin espacios. También, una vez escritos los CCPP se le puede dar al botón de *Buscar* o a la tecla *Enter*.
 
  *Ejemplo de búsqueda del Instituto Geográfico Nacional*:
 
@@ -74,9 +85,12 @@ Para ello hay que introducir el elemento a buscar y además hay que añadir en *
  
 ![Ejemplo busqueda filtro 2](docs/filtro2.png)
 
+*La simbología y nombres según la tipología del grupo de capas es la siguiente*:
+
+![Ejemplo simbología capas](docs/simbologia.png)
 ---
 
-### 🔸Localicación por coordenadas geográficas <a name="coordenadas"></a>
+### 🔸Localización por coordenadas geográficas <a name="coordenadas"></a>
 
 [👆 Volver](#contenidos)
 
@@ -94,14 +108,20 @@ También se puede buscar una dirección si se tienen sus coordenadas geográfica
 Para ello hay que segur los siguientes pasos:
 
 1. Rellenar los dos campos:
- * *Itroduzca lognitud geográfica*
- * *Itroduzca latitud geográfica*
+ * *Introduzca lognitud geográfica*
+ * *Introduzca latitud geográfica*
 
-2. Seleccionar el botón *Buscar por coordenadas*
+2. Dar al botón *Buscar por coordenadas* o tecla *Enter*
 
  *Ejemplo de búsqueda por coordenadas geográficas*:
  
 ![Ejemplo busqueda filtro 2](docs/Busquedacoordenadas.png)
+
+Ahora las capas se añaden en un grupo llamado *Resultados_reverse* y cada capa se llama con el tipo de vía, el nombre de la vía, el portal/pk y la población. Además, en la representación del punto también se muestra una etiqueta con la misma información.
+
+Otra mejora es que se pueden hacer varias capas del mismo candidato y en el nombre se añadirá un número al final.
+
+Se ha añadido un nuevo botón para poder seleccionar/deseleccionar todas las capas buscadas mediante la *Localización por coordenadas*.
 
 ---
 
@@ -111,11 +131,12 @@ Para ello hay que segur los siguientes pasos:
 
 Hay varias formas de instalar el plugin:
 
-a) Desde QGIS: En *Complementos -> Administrar e instalar complementos -> Todos* se buscaría por su nombre **Geocoder CartoCiudad**, y se instalaría. 
+a) Desde QGIS (complementos -> administrar e instalar complementos).
+Si se realiza mediante este punto, es importante habilitar los complementos experimentales para poder utilizarlo (complementos -> administrar e instalar complementos -> configuración -> habilitar también los complementos experimentales). Es así ya que esta versión 1.0 es experimental.
 
-b) Desde el repositorio oficial de complementos: [*Geocoder CartoCiudad*](https://plugins.qgis.org/plugins/PluginQGISCartociudad-main/). Se descargaría y se importaría desde QGIS en *Complementos -> Administrar e instalar complementos -> Instalar a partir de zip.*
+b) Desde el repositorio oficial de complementos https://plugins.qgis.org/plugins. Se buscaría el plugin *Geocoder CartoCiudad*, se descargaría y se importaría desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
 
-c) Desde este repositorio, en la parte de despliegues [releases](https://github.com/IDEESpain/PluginQGISCartociudad/releases). Una vez descargado el zip, se instalaría en QGIS desde *Complementos -> Administrar e instalar complementos -> Instalar a partir de zip.*
+c) Desde este repositorio, en la parte de despliegues (releases): https://github.com/IDEESpain/PluginQGISCartociudad/releases. Una vez descargado, se instalaría en QGIS desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
 
 ---
 
@@ -125,8 +146,8 @@ c) Desde este repositorio, en la parte de despliegues [releases](https://github.
 
 ```any
 /
-├── docs 📁               # Recursos de imágenes del REDMINE
-├── images 🌈             # Imágenes usadas en el 
+├── docs 📁               # Recursos de imágenes del README
+├── images 🌈             # Imágenes usadas en el plugin
 ├── LICENSE 📢            # Licencia              
 ├── metadata.txt 📁       # Metadatos
 ├── main.py 📁            # Integración de elementos

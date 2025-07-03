@@ -343,9 +343,10 @@ class ReverseCoding:
             address = str(data.get("address", "")).strip().replace(" ", "_")
             portalNumber = str(data.get("portalNumber", "")).strip().replace(" ", "_")
             poblacion = str(data.get("poblacion", "")).strip().replace(" ", "_")
+            extension = str(data.get("extension", "")).strip().replace(" ", "_")
 
             # Construir el nombre de la capa
-            base_name = f"{tip_via}_{address}_{portalNumber}_{poblacion}"
+            base_name = f"{tip_via}_{address}_{portalNumber}{extension}_{poblacion}"
             if not base_name or base_name == "___":
                 base_name = "Sin_nombre"
             

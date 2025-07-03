@@ -153,7 +153,7 @@ c) Desde este repositorio, en la parte de despliegues (releases): https://github
 ├── main.py 📁            # Integración de elementos
 ├── name.py 📁            # Localización por nombre geográfico
 ├── reverse 📁            # Localización por coordenadas
-└── ...
+└── estilos 📁            # Simbología QGIS
 ```
 ---
 

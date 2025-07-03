@@ -345,10 +345,22 @@ class ReverseCoding:
             poblacion = str(data.get("poblacion", "")).strip().replace(" ", "_")
 
             # Construir el nombre de la capa
-            layer_name = f"{tip_via}_{address}_{portalNumber}_{poblacion}"
-            if not layer_name or layer_name == "___":
-                layer_name = "Sin_nombre"
+            base_name = f"{tip_via}_{address}_{portalNumber}_{poblacion}"
+            if not base_name or base_name == "___":
+                base_name = "Sin_nombre"
             
+            # Asegurar nombre único dentro del grupo
+            layer_name = base_name
+            i = 1
+            while any(child.name() == layer_name for child in group.children()):
+                i += 1
+                layer_name = f"{base_name}_{i}"
+
+
+            # Si ya existe en self.layers, no crearla de nuevo
+            if layer_name in self.layers and self.layers[layer_name] is not None:
+                return layer_name
+                
             # Crear la capa de memoria con todos los atributos menos los excluidos
             layer = QgsVectorLayer("Point?crs=EPSG:4326", layer_name, "memory")
             pr = layer.dataProvider()

@@ -278,9 +278,13 @@ class NameTab(QWidget):
         elif group_name == "Portales_pk":
             tip_via = (location.get("tip_via") or "").strip().replace(" ", "_")
             portal = str(location.get("portalNumber") or "").strip().replace(" ", "_")
-            poblacion = (location.get("poblacion") or "").strip().replace(" ", "_")
-            extension= location.get("extension", "").strip().replace(" ", "_")
-            base_name = f"{tip_via}_{location_address}_{portal}{extension}_{poblacion}"
+            poblacion = (location.get("poblacion") or "").strip().replace(" ", "_") 
+            extension = str(location.get("extension", "") or "").strip().replace(" ", "_")
+            if extension:
+                base_name = f"{tip_via}_{location_address}_{portal}{extension}_{poblacion}"
+            else:
+                base_name = f"{tip_via}_{location_address}_{portal}_{poblacion}"
+            
         else:
             base_name = str(location_address).strip().replace(" ", "_") if location_address else "Sin_nombre"
 

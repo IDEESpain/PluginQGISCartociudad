@@ -92,28 +92,40 @@ class ReverseTab(QWidget):
             for row in range(self.reverse_results_table.rowCount()):
                 self.reverse_results_table.selectRow(row)
 
-
-
     def create_layer(self) -> None:
         # Obtener los datos necesarios para crear la capa
         selected_rows = self.reverse_results_table.selectionModel().selectedRows()
 
-        if selected_rows:
-            selected_indices = [index.row() for index in selected_rows]
-            # Definir el nombre base de la capa y el tipo de geometría
-            layer_name = "resultados reverse"
-            geometry_type = "Point"
-
-            # Llamar al método que crea las capas individuales
-            self.reverse.create_reverse_layer(layer_name, geometry_type, selected_indices)
-        else:
+        if not selected_rows:
             QMessageBox.warning(None, "¡Atención!", "No hay filas seleccionadas para crear la capa.")
+            return
 
-        
-        print("Tamaño de reverse_results:", len(self.reverse_results))
-        print("Índices seleccionados:", selected_indices)
+        selected_data = []
+        for index in selected_rows:
+            item = self.reverse_results_table.item(index.row(), 0)
+            if item:
+                data = item.data(Qt.UserRole)
+                if data:
+                    selected_data.append(data)
 
-            
+        if not selected_data:
+            QMessageBox.warning(None, "Error", "No se pudo recuperar ningún dato válido de la selección.")
+            return
+
+        # Crear la capa directamente con los datos seleccionados
+        self.reverse.create_reverse_layer("resultados reverse", "Point", selected_data)
+
+        # if selected_rows:
+        #     selected_indices = [index.row() for index in selected_rows]
+        #     # Definir el nombre base de la capa y el tipo de geometría
+        #     layer_name = "resultados reverse"
+        #     geometry_type = "Point"
+        #     self.reverse.create_reverse_layer(layer_name, geometry_type, selected_indices)
+        #     print("Tamaño de reverse_results:", len(self.reverse_results))
+        #     print("Índices seleccionados:", selected_indices)
+        # else:
+        #     QMessageBox.warning(None, "¡Atención!", "No hay filas seleccionadas para crear la capa.")
+
     def search_by_reverse(self) -> None:
 
         lon = self.coord_x.text().replace(',', '.')
@@ -257,7 +269,10 @@ class ReverseCoding:
         self.network_manager.finished.disconnect(self.handle_reverse_response)
 
     def update_table(self, reverse_data: Dict[str, Union[str, int]]) -> None:
- 
+        # # Si es la primera fila, limpiar reverse_results
+        # if self.table_widget.rowCount() == 0:
+        #     self.reverse_results = []
+
         # Actualizar la tabla con los resultados obtenidos del Reverse Geocoding
         row_position = self.table_widget.rowCount()
         self.table_widget.insertRow(row_position)
@@ -281,6 +296,9 @@ class ReverseCoding:
             QTableWidgetItem(poblacion),
             QTableWidgetItem(municipio)
         ]
+        
+        # Guardar reverse_data en el primer item
+        items[0].setData(Qt.UserRole, reverse_data)
 
         for col, item in enumerate(items):
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)  # Hacer los items no editables
@@ -320,9 +338,9 @@ class ReverseCoding:
             self.table_widget.removeRow(index.row())
             del self.results[index.row()]  # Eliminar también de la lista de resultados
 
-    def create_reverse_layer(self, base_layer_name, geometry_type, selected_indices):
+    def create_reverse_layer(self, base_layer_name, geometry_type, data_list):
 
-         # Campos a excluir
+        # Campos a excluir
         excluded_attributes = ['state', 'stateMsg', 'countryCode', 'x', 'y', 'noNumber']
 
         # Crear o obtener el grupo "reverse"
@@ -333,12 +351,18 @@ class ReverseCoding:
 
         last_layer = None  # Para guardar la última capa creada
 
-        for index in selected_indices:
-            data = self.reverse_results[index] 
+        # for index in selected_indices:
+        #     if index >= len(self.reverse_results):
+        #         print(f"Índice fuera de rango: {index}")
+        #         continue
+        #     data = self.reverse_results[index] 
+        #     if data is None:
+        #         print(f"Datos no disponibles para el índice {index}")
+        #         continue
+
+        for data in data_list:
             if data is None:
-                print(f"Datos no disponibles para el índice {index}")
-                continue
-                
+                    continue
             tip_via = str(data.get("tip_via", "")).strip().replace(" ", "_")
             address = str(data.get("address", "")).strip().replace(" ", "_")
             portalNumber = str(data.get("portalNumber", "")).strip().replace(" ", "_")
@@ -363,10 +387,21 @@ class ReverseCoding:
                 i += 1
                 layer_name = f"{base_name}_{i}"
 
+            
+            # Si la capa ya existe en el proyecto, volver a insertarla en el grupo
+            existing_layer = QgsProject.instance().mapLayersByName(layer_name)
+            if existing_layer:
+                layer = existing_layer[0]
+                group.insertChildNode(0, QgsLayerTreeLayer(layer))
+                last_layer = layer
+                # Si ya existe en self.layers, no crearla de nuevo
+                if hasattr(self, "layers") and layer_name not in self.layers:
+                    self.layers[layer_name] = layer
+                continue
 
-            # Si ya existe en self.layers, no crearla de nuevo
-            if layer_name in self.layers and self.layers[layer_name] is not None:
-                return layer_name
+            # # Si ya existe en self.layers, no crearla de nuevo
+            # if layer_name in self.layers and self.layers[layer_name] is not None:
+            #     return layer_name
                 
             # Crear la capa de memoria con todos los atributos menos los excluidos
             layer = QgsVectorLayer("Point?crs=EPSG:4326", layer_name, "memory")
@@ -416,6 +451,10 @@ class ReverseCoding:
             QgsProject.instance().addMapLayer(layer, False)
             group.insertChildNode(0, QgsLayerTreeLayer(layer))
             last_layer = layer  # Guarda la referencia a la última capa creada
+
+            # Registrar capa si usas self.layers
+            if hasattr(self, "layers"):
+                self.layers[layer_name] = layer
 
         # Al final del bucle, haz zoom solo una vez
         if last_layer is not None:

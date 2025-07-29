@@ -54,7 +54,7 @@ tiene menú contextual
 
 Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad.
 
-Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*. Una vez escrita la dirección se le puede dar al botón de *Buscar* o a la tecla *Enter*.
+Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*. Una vez escrita la dirección se pulsar el botón de *Buscar* o la tecla *Enter*.
 
  *Ejemplo de búsqueda de un vial*:
 
@@ -75,7 +75,7 @@ También, ahora, aunque se cierre la pestaña del Plugin de CartoCiudad y se bus
 🔹 **Búsqueda de un elemento filtrando por código postal**
 
 Permite realizar una búsqueda de cualquier elemento geográfico contenido en un código postal. 
-Para ello hay que introducir el elemento a buscar y además hay que añadir en *Filtrar por código postal* el número del código postal deseado. Así mismo, se puede filtrar por varios códigos postales, y para ello, hay que introducirlos seguidos de comas y sin espacios. También, una vez escritos los CCPP se le puede dar al botón de *Buscar* o a la tecla *Enter*.
+Para ello hay que introducir el elemento a buscar y además hay que añadir en *Filtrar por código postal* el número del código postal deseado. Así mismo, se puede filtrar por varios códigos postales, y para ello, hay que introducirlos seguidos de comas y sin espacios. También, una vez escritos los CCPP se puede pulsar el botón de *Buscar* o la tecla *Enter*.
 
  *Ejemplo de búsqueda del Instituto Geográfico Nacional*:
 
@@ -99,7 +99,7 @@ Se puede obtener la dirección postal de cualquier punto del territorio español
 Para ello hay dos métodos:
 
 🔹 **Capturar coordenadas en el mapa**:
-Una vez seleccionado el botón de *Capturar coordenadas del mapa*, hay que seleccional cualquier punto en el poyecto de trabajo, y si el servicior REST Geocoder geolocaliza una dirección, devuelve el resultado.
+Una vez seleccionado el botón de *Capturar coordenadas del mapa*, hay que seleccionar cualquier punto en el poyecto de trabajo, y si el servicior REST Geocoder geolocaliza una dirección, devuelve el resultado.
 
 
 🔹 **Buscar por coordenadas**:

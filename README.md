@@ -54,7 +54,7 @@ tiene menú contextual
 
 Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad.
 
-Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*. Una vez escrita la dirección se pulsar el botón de *Buscar* o la tecla *Enter*.
+Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*. Una vez escrita la dirección se puede pulsar el botón de *Buscar* o la tecla *Enter*.
 
  *Ejemplo de búsqueda de un vial*:
 

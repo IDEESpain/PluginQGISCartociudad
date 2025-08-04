@@ -172,10 +172,10 @@ class MyDockWidget(QDockWidget):
             if index == 1:
                 self.help_widget.setText("<h2>Localización por nombre geográfico</h2>"
                                         "<p>Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad.</p><br>"
-                                        "Para ello se añade en <i>Localización</i> el elemento a buscar. A continuación, se le puede dar al botón de <i>Buscar</i> o a la tecla <i>Enter</i>.</br>"
+                                        "Para ello se añade en <i>Localización</i> el elemento a buscar. A continuación, se puede pulsar el botón de <i>Buscar</i> o la tecla <i>Enter</i>.</br>"
                                         "<h3>Búsqueda de un elemento filtrando por código postal</h3>"
                                         "<p>Permite realizar una búsqueda de cualquier elemento geográfico contenido en un <i>código postal</i>.</p><br> "
-                                        "Para ello hay que introducir el elemento a buscar y además hay que añadir en Filtrar por código postal el número del código postal deseado. Así mismo, se puede filtrar por varios códigos postales, y para ello, hay que introducirlos seguidos de comas y sin espacios. De nuevo, se le puede dar al botón de <i>Buscar</i> o a la tecla <i>Enter</i>.</br>"
+                                        "Para ello hay que introducir el elemento a buscar y además hay que añadir en Filtrar por código postal el número del código postal deseado. Así mismo, se puede filtrar por varios códigos postales, y para ello, hay que introducirlos seguidos de comas y sin espacios. De nuevo, se puede pulsar el botón de <i>Buscar</i> o la tecla <i>Enter</i>.</br>"
                                     )
             elif index == 2:
                 self.help_widget.setText("<h2>Localización por coordenadas geográficas</h2>"
@@ -192,7 +192,7 @@ class MyDockWidget(QDockWidget):
                                         "<li><i>Introduzca la latitud geográfica</i></li>"
                                         "</ul>"
                                         "</li>"
-                                        "<li>Dar al botón <i>Buscar por coordenadas</i> o pulsar la tecla <i>Enter</i>.</li>"
+                                        "<li>Pulsar el botón <i>Buscar por coordenadas</i> o la tecla <i>Enter</i>.</li>"
                                         "</ol>"
                                         "</li>"
                                         "</ul>"            

@@ -115,17 +115,6 @@ class ReverseTab(QWidget):
         # Crear la capa directamente con los datos seleccionados
         self.reverse.create_reverse_layer("resultados reverse", "Point", selected_data)
 
-        # if selected_rows:
-        #     selected_indices = [index.row() for index in selected_rows]
-        #     # Definir el nombre base de la capa y el tipo de geometría
-        #     layer_name = "resultados reverse"
-        #     geometry_type = "Point"
-        #     self.reverse.create_reverse_layer(layer_name, geometry_type, selected_indices)
-        #     print("Tamaño de reverse_results:", len(self.reverse_results))
-        #     print("Índices seleccionados:", selected_indices)
-        # else:
-        #     QMessageBox.warning(None, "¡Atención!", "No hay filas seleccionadas para crear la capa.")
-
     def search_by_reverse(self) -> None:
 
         lon = self.coord_x.text().replace(',', '.')
@@ -246,15 +235,10 @@ class ReverseCoding:
             try: 
                 reverse_data = json.loads(response)
 
-            # Añadir coordenadas desde los campos de texto
-                try:
-                    reverse_data["x"] = float(self.coord_x.text().replace(',', '.'))
-                    reverse_data["y"] = float(self.coord_y.text().replace(',', '.'))
-                    # reverse_data["x"] = float(self.coord_x.text())
-                    # reverse_data["y"] = float(self.coord_y.text())
-                except ValueError:
-                    reverse_data["x"] = None
-                    reverse_data["y"] = None
+                # Verificar que 'geom' esté presente
+                if "geom" not in reverse_data:
+                    QMessageBox.critical(None, "Error", "La respuesta no contiene el campo 'geom'.")
+                    return
 
                 self.results.append(reverse_data)
                 self.update_table(reverse_data)
@@ -269,9 +253,6 @@ class ReverseCoding:
         self.network_manager.finished.disconnect(self.handle_reverse_response)
 
     def update_table(self, reverse_data: Dict[str, Union[str, int]]) -> None:
-        # # Si es la primera fila, limpiar reverse_results
-        # if self.table_widget.rowCount() == 0:
-        #     self.reverse_results = []
 
         # Actualizar la tabla con los resultados obtenidos del Reverse Geocoding
         row_position = self.table_widget.rowCount()
@@ -351,15 +332,6 @@ class ReverseCoding:
 
         last_layer = None  # Para guardar la última capa creada
 
-        # for index in selected_indices:
-        #     if index >= len(self.reverse_results):
-        #         print(f"Índice fuera de rango: {index}")
-        #         continue
-        #     data = self.reverse_results[index] 
-        #     if data is None:
-        #         print(f"Datos no disponibles para el índice {index}")
-        #         continue
-
         for data in data_list:
             if data is None:
                     continue
@@ -398,10 +370,6 @@ class ReverseCoding:
                 if hasattr(self, "layers") and layer_name not in self.layers:
                     self.layers[layer_name] = layer
                 continue
-
-            # # Si ya existe en self.layers, no crearla de nuevo
-            # if layer_name in self.layers and self.layers[layer_name] is not None:
-            #     return layer_name
                 
             # Crear la capa de memoria con todos los atributos menos los excluidos
             layer = QgsVectorLayer("Point?crs=EPSG:4326", layer_name, "memory")
@@ -432,16 +400,16 @@ class ReverseCoding:
                 layer.triggerRepaint()
 
 
-            # Intentar obtener las coordenadas x e y, manejando posibles errores
-            try:
-                x = float(data.get("x"))
-                y = float(data.get("y"))
-            except (TypeError, ValueError):
-                print(f"Coordenadas inválidas en la fila {index}: x={data.get('x')}, y={data.get('y')}")
+            # Usar la geometría WKT si está disponible
+            print("geom WKT:", data.get("geom"))
+            
+            geom_wkt = data.get("geom")
+            if not geom_wkt:
+                print("No se encontró geometría WKT en los datos.")
                 continue
 
             feature = QgsFeature()
-            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(x, y)))
+            feature.setGeometry(QgsGeometry.fromWkt(geom_wkt))
         
            # Asignar todos los atributos en el mismo orden que los campos
             feature.setAttributes([data.get(field.name(), "") for field in fields])

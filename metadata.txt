@@ -3,7 +3,7 @@
 [general]
 name=Geocoder CartoCiudad
 description= CartoCiudad ofrece direcciones postales, topónimos, poblaciones y límites administrativos de España
-version=1.2.1
+version=1.2.2
 qgisMinimumVersion=3.9
 author=Equipo CartoCiudad
 email=cartociudad@transportes.gob.es
@@ -47,6 +47,9 @@ changelog= Version 1.0 (Noviembre 2024)
             Versión 1.2.1 (Julio 2025)
              - Arreglos: 
                 - Duplicidad capas en Resultados_reverse
+            Versión 1.2.2 (Julio 2025)
+             -Arreglos:
+                - Función reverse
 
 
 # Tags

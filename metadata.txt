@@ -47,7 +47,7 @@ changelog= Version 1.0 (Noviembre 2024)
             Versión 1.2.1 (Julio 2025)
              - Arreglos: 
                 - Duplicidad capas en Resultados_reverse
-            Versión 1.2.2 (Julio 2025)
+            Versión 1.2.2 (Agosto 2025)
              -Arreglos:
                 - Función reverse
 

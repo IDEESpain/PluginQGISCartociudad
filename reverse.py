@@ -163,8 +163,8 @@ class ReverseCoding:
         self.map_tool.canvasClicked.connect(self.handle_map_click)
 
         # Configurar el comportamiento de la tabla para ajustarse a la ventana
-        self.table_widget.horizontalHeader().setStretchLastSection(True)
-        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        header = self.table_widget.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # Selección de múltiples filas completas
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # Selección por fila completa

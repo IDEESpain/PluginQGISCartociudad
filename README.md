@@ -72,6 +72,8 @@ Además, las capas se representan con un estilo determinado según la tipología
 
 También se pueden hacer varias capas del mismo candidato y se diferencian unos con otros con el número que aparece al final del nombre de la capa.
 
+![Ejemplo número capas](docs/numeros.png)
+
 🔹 **Tabla de resultados**
 
 Para una visualización optima de las tablas de resultados, se puede interactuar con el tamaño de los campos.

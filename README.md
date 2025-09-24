@@ -60,17 +60,21 @@ Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía
 
 ![Ejemplo busqueda](docs/ejemplo_ng.png)
 
-Ahora las capas se añaden en su grupo según la tipología, en este caso Viales, y la capa se nombra con el tipo de vía, el nombre de la vía y la población en la que se encuentra. Otras tipologías de elementos se nombran de otras formas según se requiera. Por ejemplo, las capas dentro del grupo de la tipología códigos postales solo se nombran con el código postal. 
+🔹 **Navegador de capas**
+
+Las capas se ven en el navegador de capas según grupo a la tipología a la que pertecezca, en la imágen anterior se aprecia la capa de Viales, y la capa se nombra con el tipo de vía, el nombre de la vía y la población en la que se encuentra. Otras tipologías de elementos se nombran de otras formas según se requiera. Por ejemplo, las capas dentro del grupo de la tipología códigos postales solo se nombran con el código postal. 
 
 Además, las capas se representan con un estilo determinado según la tipología del elemento y tiene activadas las etiquetas que coinciden con el nombre de la capa. En el caso de expendedurías y puntos de recarga los símbolos son iconos concretos.
 
-Otra mejora es que se pueden hacer varias capas del mismo candidato y en el nombre se añadirá un número al final.
+*La simbología y nombres según la tipología del grupo de capas es la siguiente*:
 
-También, ahora, aunque se cierre la pestaña del Plugin de CartoCiudad y se busque de nuevo no se generan nuevos grupos si no que las capas se añaden a los existentes.
+![Ejemplo simbología capas](docs/simbologia.png)
 
-Se ha añadido una nueva funcionalidad que permite una mejor visualización de las tablas de resultados. Se puede interactuar con el tamaño de los campos para que los *Candidatos* se vean por completo. Permite modificar el tamaño de cualquier campo.
+También se pueden hacer varias capas del mismo candidato y se diferencian unos con otros con el número que aparece al final del nombre de la capa.
 
+🔹 **Tabla de resultados**
 
+Para una visualización optima de las tablas de resultados, se puede interactuar con el tamaño de los campos.
 
 🔹 **Búsqueda de un elemento filtrando por código postal**
 
@@ -85,9 +89,7 @@ Para ello hay que introducir el elemento a buscar y además hay que añadir en *
  
 ![Ejemplo busqueda filtro 2](docs/filtro2.png)
 
-*La simbología y nombres según la tipología del grupo de capas es la siguiente*:
 
-![Ejemplo simbología capas](docs/simbologia.png)
 ---
 
 ### 🔸Localización por coordenadas geográficas <a name="coordenadas"></a>
@@ -111,19 +113,24 @@ Para ello hay que segur los siguientes pasos:
  * *Introduzca lognitud geográfica*
  * *Introduzca latitud geográfica*
 
-2. Dar al botón *Buscar por coordenadas* o tecla *Enter*
+2. Pulsar al botón *Buscar por coordenadas* o tecla *Enter*
 
  *Ejemplo de búsqueda por coordenadas geográficas*:
  
 ![Ejemplo busqueda filtro 2](docs/Busquedacoordenadas.png)
 
-Ahora las capas se añaden en un grupo llamado *Resultados_reverse* y cada capa se llama con el tipo de vía, el nombre de la vía, el portal/pk y la población. Además, en la representación del punto también se muestra una etiqueta con la misma información.
+Además se tiene la funcionalidad de seleccionar o deseleccionar todas las capas buscadas mediante el botón _(De)seleccionar todo_.
 
-Otra mejora es que se pueden hacer varias capas del mismo candidato y en el nombre se añadirá un número al final.
+🔹 **Navegador de capas**
 
-Se ha añadido un nuevo botón para poder seleccionar/deseleccionar todas las capas buscadas mediante la *Localización por coordenadas*.
+Las capas se añaden en un grupo llamado *Resultados_reverse* y cada capa se llama con el tipo de vía, el nombre de la vía, el portal/pk y la población. Además, en la representación del punto también se muestra una etiqueta con la misma información.
 
-Se ha añadido una nueva funcionalidad que permite una mejor visualización de las tablas de resultados. Se puede interactuar con el tamaño de los campos para que la *Dirección* se vea por completo. Permite modificar el tamaño de cualquier campo.
+También se pueden hacer varias capas del mismo candidato y se diferencian unos con otros con el número que aparece al final del nombre de la capa.
+
+
+🔹 **Tabla de resultados**
+
+Para una visualización optima de las tablas de resultados, se puede interactuar con el tamaño de los campos.
 
 ---
 

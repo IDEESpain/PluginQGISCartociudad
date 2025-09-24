@@ -52,7 +52,7 @@ changelog= Version 1.0 (Noviembre 2024)
                 - Función reverse
             Versión 1.2.3 (Septiembre 2025)
             -Arreglos:
-                -Visualización tablas de resultados
+                - Se puede interactuar con los campos de las tablas de resultados
 
 
 # Tags

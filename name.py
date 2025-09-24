@@ -64,7 +64,7 @@ class NameTab(QWidget):
         self.tabla_resultados.setSelectionMode(QAbstractItemView.SingleSelection)
 
         # Ajustar el comportamiento de las columnas para que se expandan
-        self.tabla_resultados.horizontalHeader().setStretchLastSection(True)
+        self.tabla_resultados.horizontalHeader().setStretchLastSection(False)
         self.tabla_resultados.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         # Añadir la tabla al layout
@@ -162,8 +162,14 @@ class NameTab(QWidget):
                 self.tabla_resultados.setItem(index, 1, item_type)
 
             # Redimensionar columnas y filas solo una vez después de que se hayan añadido todos los datos
+            self.tabla_resultados.horizontalHeader().setStretchLastSection(True)
             self.tabla_resultados.resizeColumnsToContents()
             self.tabla_resultados.resizeRowsToContents()
+            header = self.tabla_resultados.horizontalHeader()
+            for col in range(self.tabla_resultados.columnCount()):
+                header.setSectionResizeMode(col, QHeaderView.Interactive)
+            self.tabla_resultados.updateGeometry()  # Actualizar la geometría del layout del widget
+            self.tabla_resultados.repaint()  # Redibujar la tabla para forzar el ajuste visual
         else:
             QMessageBox.critical(None, "Error", f"Error en la petición: {er}")
 
@@ -354,9 +360,6 @@ class NameTab(QWidget):
         group.addLayer(layer)
 
         return layer_name
-
-
-
         
         pr = self.layers[layer_name].dataProvider()
         pr.addAttributes(self.fields)

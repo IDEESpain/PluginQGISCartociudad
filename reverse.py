@@ -2,7 +2,7 @@ import json
 import os
 from typing import List, Dict, Union
 
-from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QHeaderView, QMessageBox, QAbstractItemView, QPushButton, QVBoxLayout, QHBoxLayout, QLineEdit, QTableWidget, QMessageBox
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QHeaderView, QMessageBox, QAbstractItemView, QPushButton, QVBoxLayout, QHBoxLayout, QLineEdit, QTableWidget, QMessageBox, QAbstractScrollArea 
 from PyQt5.QtCore import Qt, QUrl, QVariant
 from PyQt5 import QtNetwork
 from qgis.gui import QgisInterface, QgsMapToolEmitPoint
@@ -50,6 +50,10 @@ class ReverseTab(QWidget):
         self.reverse_results_table = QTableWidget()
         self.reverse_results_table.setColumnCount(7)
         self.reverse_results_table.setHorizontalHeaderLabels(['Tipo_via','Dirección', 'Número/pk', 'Extension', 'CCPP','Población','Municipio'])
+        # reverse_layout.addWidget(self.reverse_results_table)
+        header = self.reverse_results_table.horizontalHeader()
+        for col in range(self.reverse_results_table.columnCount()):
+            header.setSectionResizeMode(col, QHeaderView.Stretch)
         reverse_layout.addWidget(self.reverse_results_table)
 
         # Añadir los botones de acciones debajo de la tabla
@@ -161,11 +165,10 @@ class ReverseCoding:
         # Habilitar el uso del clic en el mapa de QGIS para capturar coordenadas
         self.map_tool = QgsMapToolEmitPoint(self.iface.mapCanvas())
         self.map_tool.canvasClicked.connect(self.handle_map_click)
-
         # Configurar el comportamiento de la tabla para ajustarse a la ventana
-        header = self.table_widget.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeToContents)
-
+        self.table_widget.horizontalHeader().setStretchLastSection(False)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         # Selección de múltiples filas completas
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)  # Selección por fila completa
         self.table_widget.setSelectionMode(QAbstractItemView.MultiSelection)  # Permitir selección múltiple
@@ -283,15 +286,22 @@ class ReverseCoding:
 
         for col, item in enumerate(items):
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)  # Hacer los items no editables
+            item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter) 
+            if col == 1: # Alinear a la izquierda
+                item.setData(Qt.TextWordWrap, True)  # Permitir ajuste de texto
             self.table_widget.setItem(row_position, col, item)
 
         self.reverse_results.append(reverse_data)
 
-        # Ajuste explícito de la última columna
+                # Ajuste explícito de la última columna
         self.table_widget.horizontalHeader().setStretchLastSection(True)
 
-        # Ajustar el layout y las filas después de insertar nuevas filas
+        # # Ajustar el layout y las filas después de insertar nuevas filas
+        self.table_widget.resizeColumnsToContents()
         self.table_widget.resizeRowsToContents()  # Ajustar el tamaño de las filas
+        header = self.table_widget.horizontalHeader()
+        for col in range(self.table_widget.columnCount()):
+            header.setSectionResizeMode(col, QHeaderView.Interactive)
         self.table_widget.updateGeometry()  # Actualizar la geometría del layout del widget
         self.table_widget.repaint()  # Redibujar la tabla para forzar el ajuste visual
 

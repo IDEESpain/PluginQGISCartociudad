@@ -228,8 +228,7 @@ class NameTab(QWidget):
         # Agregar la geometría a la capa correspondiente
         self.add_feature_to_layer(location, layer_name)
 
-    
-    
+ 
     def create_layer(self, geometry_type: str, location: Dict[str, Union[str, List[str]]]) -> str:
         location_type = location.get("type", "").lower()
         location_address = location.get("address")
@@ -360,7 +359,7 @@ class NameTab(QWidget):
         group.addLayer(layer)
 
         return layer_name
-        
+
         pr = self.layers[layer_name].dataProvider()
         pr.addAttributes(self.fields)
         self.layers[layer_name].updateFields()

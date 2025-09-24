@@ -68,7 +68,7 @@ Otra mejora es que se pueden hacer varias capas del mismo candidato y en el nomb
 
 También, ahora, aunque se cierre la pestaña del Plugin de CartoCiudad y se busque de nuevo no se generan nuevos grupos si no que las capas se añaden a los existentes.
 
-
+Se ha añadido una nueva funcionalidad que permite una mejor visualización de las tablas de resultados. Se puede interactuar con el tamaño de los campos para que los *Candidatos* se vean por completo. Permite modificar el tamaño de cualquier campo.
 
 
 
@@ -123,6 +123,7 @@ Otra mejora es que se pueden hacer varias capas del mismo candidato y en el nomb
 
 Se ha añadido un nuevo botón para poder seleccionar/deseleccionar todas las capas buscadas mediante la *Localización por coordenadas*.
 
+Se ha añadido una nueva funcionalidad que permite una mejor visualización de las tablas de resultados. Se puede interactuar con el tamaño de los campos para que la *Dirección* se vea por completo. Permite modificar el tamaño de cualquier campo.
 ---
 
 ## 🚀 Instalación <a name="instalacion"></a>

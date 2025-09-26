@@ -27,9 +27,9 @@ repository=https://github.com/IDEESpain/PluginQGISCartociudad
 # End mandatory items
 
 # Recommended items
-changelog= Version 1.0 (Noviembre 2024)
+changelog=  Version 1.0 (Noviembre 2024)
             - Versión experimental
-	       Versión 1.1 (Febrero 2025)
+	        Versión 1.1 (Febrero 2025)
 	        - Versión no experimental
 	        - Arreglo: Usar el plugin en cualquier Sistema de Referencia de Coordenadas
             Versión 1.2 (Julio 2025)
@@ -45,13 +45,13 @@ changelog= Version 1.0 (Noviembre 2024)
                 - Eliminación campo noNumber en la tabla de atributos
 		        - Aspectos visuales
             Versión 1.2.1 (Julio 2025)
-             - Arreglos: 
+            - Arreglos: 
                 - Duplicidad capas en Resultados_reverse
             Versión 1.2.2 (Agosto 2025)
-             -Arreglos:
+            - Arreglos:
                 - Función reverse
             Versión 1.2.3 (Septiembre 2025)
-            -Arreglos:
+            - Arreglos:
                 - Se puede interactuar con los campos de las tablas de resultados
 
 

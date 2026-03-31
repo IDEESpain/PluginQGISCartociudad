@@ -11,7 +11,7 @@ CartoCiudad ofrece diferentes servicios web de geolocalización de direcciones p
  
 Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y descargar todos los elementos almacenados en CartoCiudad, se ha creado este **complemento de QGIS**, que está basado en servicio REST «Geocoder».
  
- ![PluginQGIS](docs/inicio.png)
+ ![PluginQGIS](imagenes_github/inicio.png)
  
 ---
 
@@ -24,6 +24,7 @@ Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y desc
   * 🔸 [Localización por coordenadas geográficas](#coordenadas)
 * 🚀 [Instalación](#instalacion)
 * ↗️ [Exportación](#exportacion)
+* 📄 [Documentación auxiliar](#auxiliar)
 * 📁 [Estructura del código](#estructura)
 * ⛲️ [Referencias](#referencias)
 
@@ -64,7 +65,7 @@ Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía
 
  *Ejemplo de búsqueda de un vial*:
 
-![Ejemplo busqueda](docs/ejemplo_ng.png)
+![Ejemplo busqueda](imagenes_github/ejemplo_ng.png)
 
 🔹 **Navegador de capas**
 
@@ -74,11 +75,11 @@ Además, las capas se representan con un estilo determinado según la tipología
 
 *La simbología y nombres según la tipología del grupo de capas es la siguiente*:
 
-![Ejemplo simbología capas](docs/simbologia.png)
+![Ejemplo simbología capas](imagenes_github/simbologia.png)
 
 También se pueden hacer varias capas del mismo candidato y se diferencian unos con otros con el número que aparece al final del nombre de la capa.
 
-![Ejemplo número capas](docs/numeros.png)
+![Ejemplo número capas](imagenes_github/numeros.png)
 
 🔹 **Tabla de resultados**
 
@@ -91,11 +92,11 @@ Para ello hay que introducir el elemento a buscar y además hay que añadir en *
 
  *Ejemplo de búsqueda del Instituto Geográfico Nacional*:
 
-![Ejemplo busqueda filtro 1](docs/filtro1.png)
+![Ejemplo busqueda filtro 1](imagenes_github/filtro1.png)
 
  *Ejemplo de búsqueda del Instituto Geográfico Nacional del código postal 28003*:
  
-![Ejemplo busqueda filtro 2](docs/filtro2.png)
+![Ejemplo busqueda filtro 2](imagenes_github/filtro2.png)
 
 🔹 **(Opcional) Búsqueda de un elemeto por unidad administrativa**
 
@@ -105,7 +106,7 @@ Para ello se debe pulsar en el botón de *Filtros avanzados* y seleccionar la un
 
 *Ejemplo de búsqueda de la calle General Ibañez en la provincia de Madrid (Comunidad de Madrid)*:
 
-![Ejemplo busqueda filtro UA](docs/filtroUA.png)
+![Ejemplo busqueda filtro UA](imagenes_github/filtroUA.png)
 
 🔹 **(Opcional) Búsqueda de un elemento por tipo**
 
@@ -129,7 +130,7 @@ Para ello se debe pulsar el botón *Seleccionar elementos* y marcar aquellos que
 
 *Ejemplo de búsqueda de IGN con filtro en toponimo y ngbe*
 
-![Ejemplo busqueda filtro tipo](docs/filtrotipo.png)
+![Ejemplo busqueda filtro tipo](imagenes_github/filtrotipo.png)
 
 
 **🔖 Se pueden usar todos los tipos de filtros opcionales a la vez para ajustar la búsqueda**
@@ -161,7 +162,7 @@ Para ello hay que segur los siguientes pasos:
 
  *Ejemplo de búsqueda por coordenadas geográficas*:
  
-![Ejemplo busqueda filtro 2](docs/Busquedacoordenadas.png)
+![Ejemplo busqueda filtro 2](imagenes_github/Busquedacoordenadas.png)
 
 Además se tiene la funcionalidad de seleccionar o deseleccionar todas las capas buscadas mediante el botón _(De)seleccionar todo_.
 
@@ -218,7 +219,6 @@ Tres tablas correspondientes con los nombres y códigos respectivos de comunidad
 
 ```any
 /
-├── docs 📁               # Recursos de imágenes del README
 ├── images 🌈             # Imágenes usadas en el plugin
 ├── LICENSE 📢            # Licencia              
 ├── metadata.txt 📁       # Metadatos

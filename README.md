@@ -2,7 +2,7 @@
 
 ⚠️ **NOTA** ⚠️
 
-A partir de la versión 2.0 del plugin solo está disponible para versiones de QGIS 3.42.0 o superiores
+A partir de la versión 2.0 el plugin solo estará disponible para versiones de QGIS 3.42.0 o superiores
 
 
 ## ✍️ Descripción del plugin
@@ -205,6 +205,13 @@ b) Mediante la herramienta de *Unir capas vectoriales* y posteriormente exportar
 c) Mediante el complemento expermiental externo *QConsolidate3*.
 
 
+## 📄 Documentación auxiliar <a name="auxiliar"></a>
+
+[👆 Volver](#contenidos)
+
+Tres tablas correspondientes con los nombres y códigos respectivos de comunidades y ciudades autónomas, provincias y municipios, recopiladas por CartoCiudad, procedentes del Instituto Geográfico Nacional. Con dichos nombres se pueden hacer una serie de filtrados en el *plugin*.
+
+
 ## 📁 Estructura del código <a name="estructura"></a>
 
 [👆 Volver](#contenidos)
@@ -218,7 +225,8 @@ c) Mediante el complemento expermiental externo *QConsolidate3*.
 ├── main.py 📁            # Integración de elementos
 ├── name.py 📁            # Localización por nombre geográfico
 ├── reverse 📁            # Localización por coordenadas
-└── estilos 📁            # Simbología QGIS
+├── estilos 📁            # Simbología QGIS  
+└── compact.py 📁         # Archivo compatibilidad QT5-QT6                                                                    
 ```
 ---
 

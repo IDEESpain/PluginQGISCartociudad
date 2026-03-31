@@ -9,7 +9,7 @@ qgisMaximumVersion=4.99
 author=Equipo CartoCiudad
 email=cartociudad@transportes.gob.es
 
-about= <div><b>NOTA: Esta versión del plugin solo está disponible para versiones de QGIS 3.42.0 o superiores</b>
+about= <div><b>NOTA: A partir de la versión 2.0 del plugin solo está disponible para versiones de QGIS 3.42.0 o superiores</b>
     Complemento de QGIS para la geolocalización y descarga de elementos de CartoCiudad basado en el servicio REST «Geocoder CartoCiudad»  (https://www.cartociudad.es/geocoder) que permite localizar objetos geográficos de España por identificadores geográficos y por coordenadas geográficas. Se pueden localizar los siguientes objetos geográficos:
     <ul style="margin:0;">
     <li>Direcciones postales</li>

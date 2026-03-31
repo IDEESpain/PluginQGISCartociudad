@@ -273,7 +273,7 @@ class MyDockWidget(QDockWidget):
         layout = QVBoxLayout(tab)
 
         label = QLabel(
-            "<p><b>NOTA: Esta versión del plugin solo está disponible para verisones de QGIS 3.42.0 o superiores.</b></p>"
+            "<p><b>NOTA: A partir de la versión 2.0 del plugin solo está disponible para verisones de QGIS 3.42.0 o superiores.</b></p>"
             "<h2>Descripción del Geocoder CartoCiudad</h2>"
             "<p>CartoCiudad ofrece diferentes servicios web de geolocalización de direcciones postales, topónimos, "
             "poblaciones y límites administrativos de España. Para poder utilizar estos servicios web en QGIS y así "

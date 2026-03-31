@@ -2,7 +2,7 @@
 
 ⚠️ **NOTA** ⚠️
 
-Esta versión del plugin solo está disponible para versiones de QGIS 3.42.0 o superiores
+A partir de la versión 2.0 del plugin solo está disponible para versiones de QGIS 3.42.0 o superiores
 
 
 ## ✍️ Descripción del plugin
@@ -103,7 +103,7 @@ Permite realizar una búsqueda de cualquier elemento geográfico filtrando por u
 
 Para ello se debe pulsar en el botón de *Filtros avanzados* y seleccionar la unidad administrativa por la que se quiere filtrar. Se pueden usar las distintas unidades a la vez y seleccionar varios de la misma unidad administrativa.
 
-*Ejemplo de búsqueda de la calle Vicente Aleixandre en el municipio de Carboneras en Almería*:
+*Ejemplo de búsqueda de la calle General Ibañez en la provincia de Madrid (Comunidad de Madrid)*:
 
 ![Ejemplo busqueda filtro UA](docs/filtroUA.png)
 

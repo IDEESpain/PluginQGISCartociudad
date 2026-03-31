@@ -389,14 +389,14 @@ class NameTab(QWidget):
     def load_filters_from_github(self) -> None:
         filter_mapping = {
             'comunidad_autonoma': {
-                'url': 'https://raw.githubusercontent.com/IDEESpain/PluginQGISCartociudad//blob/main/cartociudad.comunidad_autonoma.csv',
+                'url': 'https://raw.githubusercontent.com/IDEESpain/PluginQGISCartociudad/main/cartociudad.comunidad_autonoma.csv',
                 'backup_url': 'https://www.idee.es/resources/documentos/Cartociudad/cartociudad.comunidad_autonoma.csv',
                 'column': 'nom_comunidad',
                 'parent_key': 'id_com',
                 'defaults': ['No se han cargado los datos']
             },
             'provincia': {
-                'url': 'https://raw.githubusercontent.com/IDEESpain/PluginQGISCartociudad//blob/main/cartociudad.provincia.csv',
+                'url': 'https://raw.githubusercontent.com/IDEESpain/PluginQGISCartociudad/main/cartociudad.provincia.csv',
                 'backup_url': 'https://www.idee.es/resources/documentos/Cartociudad/cartociudad.provincia.csv',
                 'column': 'nom_provincia',
                 'parent_filter': 'comunidad_autonoma',
@@ -405,7 +405,7 @@ class NameTab(QWidget):
                 'defaults': ['No se han cargado los datos']
             },
             'municipio': {
-                'url': 'https://raw.githubusercontent.com/IDEESpain/PluginQGISCartociudad//blob/main/cartociudad.municipio.csv',
+                'url': 'https://raw.githubusercontent.com/IDEESpain/PluginQGISCartociudad/main/cartociudad.municipio.csv',
                 'backup_url': 'https://www.idee.es/resources/documentos/Cartociudad/cartociudad.municipio.csv',
                 'column': 'nom_municipio',
                 'parent_filter': 'provincia',

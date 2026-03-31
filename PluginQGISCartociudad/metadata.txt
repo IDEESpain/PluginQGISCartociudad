@@ -1,0 +1,76 @@
+# Mandatory items:
+
+[general]
+name=Geocoder CartoCiudad
+description= CartoCiudad ofrece direcciones postales, topónimos, poblaciones y límites administrativos de España
+version=2.0
+qgisMinimumVersion=3.22
+qgisMaximumVersion=4.99
+author=Equipo CartoCiudad
+email=cartociudad@transportes.gob.es
+
+about= <div><b>NOTA: A partir de la versión 2.0 el plugin solo estará disponible para versiones de QGIS 3.42.0 o superiores</b>
+    Complemento de QGIS para la geolocalización y descarga de elementos de CartoCiudad basado en el servicio REST «Geocoder CartoCiudad»  (https://www.cartociudad.es/geocoder) que permite localizar objetos geográficos de España por identificadores geográficos y por coordenadas geográficas. Se pueden localizar los siguientes objetos geográficos:
+    <ul style="margin:0;">
+    <li>Direcciones postales</li>
+    <li>Topónimos</li>
+    <li>Puntos de Interés</li>
+    <li>Unidades administrativas (Comunidades y ciudades autónomas, provincias y municipios)</li>
+    <li>Entidades de población</li>
+    <li>Códigos postales</li>
+    <li>Referencias catastrales (Servicios SOAP. Dirección General de Catastro)</li></ul>
+    La información que se devuelve puede ser puntual (portales, PK, códigos postales, puntos de interés, topónimos y referencias catastrales), lineal (viales) y superficial (unidades administrativas y entidades de población).
+    </div>
+
+
+tracker=https://github.com/IDEESpain/PluginQGISCartociudad/issues
+repository=https://github.com/IDEESpain/PluginQGISCartociudad
+homepage=https://plugins.qgis.org/plugins/PluginQGISCartociudad-main
+
+# End mandatory items
+
+# Recommended items
+changelog=  Versión 2.0 (Marzo 2026)
+            - Arreglos: 
+            * Compatibilidad con QGIS >= 3.42.0 (Qt5) y QGIS 4.0 (Qt6)
+            * Refactor de imports para usar qgis.PyQt
+            * Adaptación de enums Qt5/Qt6 mediante capa de compatibilidad
+            - Mejoras: 
+            * Filtros opcionales en la búsqueda por nombre
+            Versión 1.2.3 (Septiembre 2025)
+            - Arreglos:
+                * Se puede interactuar con los campos de las tablas de resultados
+            Versión 1.2.2 (Agosto 2025)
+            - Arreglos:
+                * Función reverse
+            Versión 1.2.1 (Julio 2025)
+            - Arreglos: 
+                * Duplicidad capas en Resultados_reverse
+            Versión 1.2 (Julio 2025)
+	        - Nuevas funcionalidades: 
+		        * Generación de grupos de capas por tipo de elemento
+		        * Simbología, etiquetas y nombre específico por tipología de capa
+                * Añade números en el nombre de la capa cuando tienen el mismo nombre
+                * Permite pulsar la tecla Enter para hacer las búsquedas
+                * Nuevo botón para seleccionar/deseleccionar todos los candidatos de la búsqueda por coordenadas
+		        * Pestaña de información inicial y ayuda en las herramientas
+	        - Arreglos: 
+                * Introducir las coordenadas con el separador de decimales con punto o coma
+                * Eliminación campo noNumber en la tabla de atributos
+		        * Aspectos visuales
+            Versión 1.1 (Febrero 2025)
+	        - Versión no experimental
+	        - Arreglo: 
+                * Usar el plugin en cualquier Sistema de Referencia de Coordenadas
+            Version 1.0 (Noviembre 2024)
+            - Versión experimental
+
+
+
+
+
+# Tags
+tags=cartociudad,api,rest,geocoder,localizacion,españa,buscador,direcciones,candidates,find,reverse,ccpp,municipios,poblaciones,locator
+
+category=Plugins
+icon=images/Logo_small.svg

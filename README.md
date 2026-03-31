@@ -1,5 +1,10 @@
 #  Geocoder CartoCiudad 
 
+⚠️ **NOTA** ⚠️
+
+A partir de la versión 2.0 el plugin solo estará disponible para versiones de QGIS 3.42.0 o superiores
+
+
 ## ✍️ Descripción del plugin
 
 CartoCiudad ofrece diferentes servicios web de geolocalización de direcciones postales, topónimos, poblaciones y límites administrativos de España.
@@ -18,6 +23,7 @@ Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y desc
   * 🔸 [Localización por nombre geográfico](#nombregeografico)
   * 🔸 [Localización por coordenadas geográficas](#coordenadas)
 * 🚀 [Instalación](#instalacion)
+* ↗️ [Exportación](#exportacion)
 * 📁 [Estructura del código](#estructura)
 * ⛲️ [Referencias](#referencias)
 
@@ -35,15 +41,15 @@ Se pueden localizar los siguientes objetos geográficos:
  
   * Puntos de Interés
  
-  * Unidades administrativas
+  * Unidades administrativas (Comunidades y ciudades autónomas, provincias y municipios)
  
-  * Poblaciones
+  * Entidades de Población 
  
   * Códigos postales
  
   * Referencias catastrales (Servicios SOAP. Dirección General de Catastro)
  
-La información que se devuelve puede ser **puntual** (portales, PK, códigos postales, puntos de interés y referencias catastrales), **lineal** (viales) y **superficial** (unidades administrativas y entidades de población).
+La información que se devuelve puede ser **puntual** (portales, PK, códigos postales, puntos de interés, topónimos y referencias catastrales), **lineal** (viales) y **superficial** (unidades administrativas y entidades de población).
 tiene menú contextual
 
 ---
@@ -52,7 +58,7 @@ tiene menú contextual
 
 [👆 Volver](#contenidos)
 
-Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad.
+Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad. El servicio a partir de una petición busca y devuelve candidatos con los resultados con similitud fonética al nombre geográfico buscado, junto con una serie de parámetros de información asociada. Es importante mencionar que el orden de estos resultados sigue un orden intriseco por tipología y que el número de registros también está determinado por tipología.
 
 Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*. Una vez escrita la dirección se puede pulsar el botón de *Buscar* o la tecla *Enter*.
 
@@ -78,7 +84,7 @@ También se pueden hacer varias capas del mismo candidato y se diferencian unos 
 
 Para una visualización optima de las tablas de resultados, se puede interactuar con el tamaño de los campos.
 
-🔹 **Búsqueda de un elemento filtrando por código postal**
+🔹 **(Opcional) Búsqueda de un elemento filtrando por código postal**
 
 Permite realizar una búsqueda de cualquier elemento geográfico contenido en un código postal. 
 Para ello hay que introducir el elemento a buscar y además hay que añadir en *Filtrar por código postal* el número del código postal deseado. Así mismo, se puede filtrar por varios códigos postales, y para ello, hay que introducirlos seguidos de comas y sin espacios. También, una vez escritos los CCPP se puede pulsar el botón de *Buscar* o la tecla *Enter*.
@@ -91,6 +97,42 @@ Para ello hay que introducir el elemento a buscar y además hay que añadir en *
  
 ![Ejemplo busqueda filtro 2](docs/filtro2.png)
 
+🔹 **(Opcional) Búsqueda de un elemeto por unidad administrativa**
+
+Permite realizar una búsqueda de cualquier elemento geográfico filtrando por unidad administrativa: municipios, provincias y/o comunidades autónomas. Por defecto se encuentran deseleccionados, de manera que busca en todos. Se pueden usar de manera conjunta para encontrar más rápido la UA deseada.
+
+Para ello se debe pulsar en el botón de *Filtros avanzados* y seleccionar la unidad administrativa por la que se quiere filtrar. Se pueden usar las distintas unidades a la vez y seleccionar varios de la misma unidad administrativa.
+
+*Ejemplo de búsqueda de la calle General Ibañez en la provincia de Madrid (Comunidad de Madrid)*:
+
+![Ejemplo busqueda filtro UA](docs/filtroUA.png)
+
+🔹 **(Opcional) Búsqueda de un elemento por tipo**
+
+Permite realizar una búsqueda de cualquier elemento geográfico filtrando por tipología. Por defecto se búscan  todos los tipos de elementos, al igual que si se deseleccionan todos ellos.
+
+Los elementos que se incluyen son los siguientes:
+
+  * **Entidades de población**
+  * **Municipios**
+  * **Provincias**
+  * **Comunidades y ciudades autónomas**
+  * **Topónimos y POI**
+  * **Viales (urbanos)**
+  * **Viales (interurbanos)**
+  * **Portales y puntos kilométricos**
+  * **Expendidurías**
+  * **Puntos de recarga eléctrica**
+  * **Topónimos orográficos (NGBE)**
+
+Para ello se debe pulsar el botón *Seleccionar elementos* y marcar aquellos que queramos que se incluyan en la búsqueda. Una vez marcados todos los tipos se pulsa *Aceptar* o la tecla *Enter*. A continuación, para realizar la búsqueda se debe pulsar de nuevo la tecla *Enter* o el botón de *Buscar*.
+
+*Ejemplo de búsqueda de IGN con filtro en toponimo y ngbe*
+
+![Ejemplo busqueda filtro tipo](docs/filtrotipo.png)
+
+
+**🔖 Se pueden usar todos los tipos de filtros opcionales a la vez para ajustar la búsqueda**
 
 ---
 
@@ -98,7 +140,7 @@ Para ello hay que introducir el elemento a buscar y además hay que añadir en *
 
 [👆 Volver](#contenidos)
 
-Se puede obtener la dirección postal de cualquier punto del territorio español a partir de sus coordenadas.
+Se puede obtener la dirección postal de cualquier punto del territorio español a partir de sus coordenadas. Los campos longitud y latitud que se devuelven no son los que se muestran como parámetros de entrada en la petición, sino los correspondientes a la entidad que se devuelve en el resultado.
 
 Para ello hay dos métodos:
 
@@ -107,7 +149,7 @@ Una vez seleccionado el botón de *Capturar coordenadas del mapa*, hay que selec
 
 
 🔹 **Buscar por coordenadas**:
-También se puede buscar una dirección si se tienen sus coordenadas geográficas (latitud y longitud en WGS84).
+También se puede buscar una dirección si se tienen sus coordenadas geográficas (latitud y longitud en WGS84; EPSG:4326).
 
 Para ello hay que segur los siguientes pasos:
 
@@ -142,13 +184,33 @@ Para una visualización optima de las tablas de resultados, se puede interactuar
 
 Hay varias formas de instalar el plugin:
 
-a) Desde QGIS (complementos -> administrar e instalar complementos). Se buscaría el plugin *Geocoder CartoCiudad*, donde se puede ver toda la información del *plugin*, a partir de sus metadatos, y se seleccionaría la opción de *Instalar complemento*.
+a) Desde QGIS (complementos -> administrar e instalar complementos). Buscar el plugin *Geocoder CartoCiudad* y se seleccionar la opción de *Instalar complemento*.
 
-b) Desde el repositorio oficial de complementos https://plugins.qgis.org/plugins. Se buscaría el plugin *Geocoder CartoCiudad*, se descargaría y se importaría desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
+b) Desde el repositorio oficial de complementos https://plugins.qgis.org/plugins. Buscar el plugin *Geocoder CartoCiudad*, descargar e importar desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
 
-c) Desde este repositorio, en la parte de despliegues (releases): https://github.com/IDEESpain/PluginQGISCartociudad/releases. Una vez descargado, se instalaría en QGIS desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
+c) Desde este repositorio, en la parte de despliegues (releases): https://github.com/IDEESpain/PluginQGISCartociudad/releases. Una vez descargada la versión deseada, se instala en QGIS desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
 
 ---
+
+## ↗️ Exportación de capas <a name="exportacion"></a>
+
+[👆 Volver](#contenidos)
+
+La exportación de las capas se puede hacer de las siguientes formas:
+
+a) Manualmente y de manera individual.
+
+b) Mediante la herramienta de *Unir capas vectoriales* y posteriormente exportar la capa resultante.
+
+c) Mediante el complemento expermiental externo *QConsolidate3*.
+
+
+## 📄 Documentación auxiliar <a name="auxiliar"></a>
+
+[👆 Volver](#contenidos)
+
+Tres tablas correspondientes con los nombres y códigos respectivos de comunidades y ciudades autónomas, provincias y municipios, recopiladas por CartoCiudad, procedentes del Instituto Geográfico Nacional. Con dichos nombres se pueden hacer una serie de filtrados en el *plugin*.
+
 
 ## 📁 Estructura del código <a name="estructura"></a>
 
@@ -163,7 +225,8 @@ c) Desde este repositorio, en la parte de despliegues (releases): https://github
 ├── main.py 📁            # Integración de elementos
 ├── name.py 📁            # Localización por nombre geográfico
 ├── reverse 📁            # Localización por coordenadas
-└── estilos 📁            # Simbología QGIS
+├── estilos 📁            # Simbología QGIS  
+└── compact.py 📁         # Archivo compatibilidad QT5-QT6                                                                    
 ```
 ---
 
@@ -172,5 +235,5 @@ c) Desde este repositorio, en la parte de despliegues (releases): https://github
 [👆 Volver](#contenidos)
 
 * [Portal CartoCiudad](https://www.cartociudad.es/web/portal)
-* [Guía Técnica de Servicios Web](https://www.idee.es/resources/documentos/Cartociudad/CartoCiudad_ServiciosWeb.pdf)
+* [Servicio REST Geocoder](https://github.com/IDEESpain/Cartociudad)
 * [Ayuda proyecto CartoCiudad](https://www.idee.es/resources/documentos/Cartociudad/StoryMap.html)

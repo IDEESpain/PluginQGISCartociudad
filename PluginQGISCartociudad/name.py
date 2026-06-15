@@ -1,19 +1,20 @@
+# Importación de librerias y módulos necesarios
+
 import os
 import json
 import csv
-import pandas as pd
 from io import StringIO
 from typing import List, Dict, Any, Union, Optional
 
 from qgis.PyQt.QtWidgets import (
-    QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QTableWidget,
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QLabel, QTableWidget,
     QTableWidgetItem, QAbstractItemView, QMessageBox, QHeaderView,
     QDialogButtonBox, QListWidgetItem, QListWidget, QDialog, QSizePolicy,
-    QToolButton, QFrame
+    QToolButton, QFrame, QTextEdit
 )
-from qgis.PyQt.QtCore import QUrl, Qt, QMetaType
+from qgis.PyQt.QtCore import QUrl, QMetaType, QSettings
 from qgis.PyQt import QtNetwork
-from qgis.PyQt.QtGui import QBrush, QColor, QPalette
+from qgis.PyQt.QtGui import QBrush, QColor, QPalette, QTextOption
 
 from qgis.gui import QgisInterface
 from qgis.core import (
@@ -30,13 +31,16 @@ try:
 except ImportError:
     from urllib2 import urlopen, URLError
 
+from .errors import _get_error_message, _get_url_error_message
 
+
+# Declaración de constantes
 LIMIT = 35
 API_GEOCODER = 'https://www.cartociudad.es/geocoder/api/geocoder'
 
 
+# Comprueba si el contenido es html cuando carga los filtros desde GitHub
 def _looks_like_html(raw_bytes, headers) -> bool:
-    """Devuelve True si la respuesta parece HTML por content-type o contenido."""
     try:
         ct = headers.get_content_type()
         if ct and 'html' in ct.lower():
@@ -51,9 +55,8 @@ def _looks_like_html(raw_bytes, headers) -> bool:
         pass
     return False
 
-
+# Detecta el delimitador de un texto CSV 
 def _detect_delimiter(sample_text: str) -> str:
-    """Detecta el delimitador del CSV."""
     try:
         sniffer = csv.Sniffer()
         dialect = sniffer.sniff(sample_text)
@@ -62,7 +65,7 @@ def _detect_delimiter(sample_text: str) -> str:
         first = sample_text.splitlines()[0] if sample_text.splitlines() else ''
         return ';' if first.count(';') > first.count(',') else ','
 
-
+# Dialogo del boton de seleccionar elementos a mostrar en la búsqueda
 class ComboDialog(QDialog):
     def __init__(self, items, selected_keys=None, parent=None):
         super().__init__(parent)
@@ -87,7 +90,7 @@ class ComboDialog(QDialog):
 
         self.adjustSize()
         self.setFixedSize(self.size())
-
+    # Crea una lista con los elementos seleccionados en el dialogo
     def get_selected_items(self):
         selected = []
         for i in range(self.list_widget.count()):
@@ -96,8 +99,9 @@ class ComboDialog(QDialog):
                 selected.append(item.data(CQt.UserRole))
         return selected
 
-
+# Dialogo para seleccionar filtros de las unidades administrativas
 class FilterDialog(QDialog):
+    
     def __init__(self, filters: dict, selected: dict = None, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Seleccionar Unidades Administrativas")
@@ -118,6 +122,12 @@ class FilterDialog(QDialog):
             frame_layout = QVBoxLayout(frame)
             frame.setVisible(False)
 
+            
+            search_box = QLineEdit(self)
+            search_box.setPlaceholderText("Buscar...")
+            frame_layout.addWidget(search_box)
+
+
             listw = QListWidget(self)
             listw.setSelectionMode(QListWidget.SelectionMode.NoSelection)
             listw.setSizePolicy(
@@ -125,17 +135,42 @@ class FilterDialog(QDialog):
             )
             listw.setMinimumHeight(140)
 
+            
+            search_box.textChanged.connect(lambda text, lw=listw: self.filter_list(text, lw)
+)
+            # Separa elementos en marcados y no marcados
+            checked_options = []
+            unchecked_options = []
+            
             for opt in options:
+                if selected and key in selected and opt in selected[key]:
+                    checked_options.append(opt)
+                else:
+                    unchecked_options.append(opt)
+            
+            # Agrega primero los marcados, luego los no marcados
+            for opt in checked_options + unchecked_options:
                 it = QListWidgetItem(opt)
                 it.setFlags(it.flags() | CQt.ItemIsUserCheckable)
-                checked = False
-                if selected and key in selected and opt in selected[key]:
-                    checked = True
+                checked = (selected and key in selected and opt in selected[key])
                 it.setCheckState(CQt.Checked if checked else CQt.Unchecked)
                 listw.addItem(it)
 
             listw.itemChanged.connect(lambda item, k=key: self.on_item_changed(k, item))
             frame_layout.addWidget(listw)
+            
+            # Agrega botones de seleccionar/deseleccionar todo
+            buttons_layout = QHBoxLayout()
+            
+            select_all_btn = QPushButton("Seleccionar todo")
+            select_all_btn.clicked.connect(lambda checked=False, k=key: self.select_all(k))
+            buttons_layout.addWidget(select_all_btn)
+            
+            deselect_all_btn = QPushButton("Deseleccionar todo")
+            deselect_all_btn.clicked.connect(lambda checked=False, k=key: self.deselect_all(k))
+            buttons_layout.addWidget(deselect_all_btn)
+            
+            frame_layout.addLayout(buttons_layout)
             layout.addWidget(frame)
 
             def make_toggler(f=frame, b=btn):
@@ -160,6 +195,20 @@ class FilterDialog(QDialog):
 
         self.adjustSize()
 
+        if selected:
+            if 'comunidad_autonoma' in selected:
+                self.update_dependent_filters('comunidad_autonoma')
+            if 'provincia' in selected:
+                self.update_dependent_filters('provincia')
+
+    def filter_list(self, text, list_widget):
+        text = text.lower()
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            matches = text in item.text().lower()
+            item.setHidden(not matches)
+
+    # Devuelve una lista con los valores seleccionados de un filtro concreto
     def get_checked_values(self, key: str) -> List[str]:
         res = []
         listw = self.lists.get(key)
@@ -171,20 +220,35 @@ class FilterDialog(QDialog):
                 res.append(it.text())
         return res
 
+    # Ordena los elementos de la lista de un filtro colocando primero los marcados 
     def on_item_changed(self, key: str, item: QListWidgetItem) -> None:
+        self.ordenar_lista(key)
         self.update_dependent_filters(key)
 
+    # Actualiza los filtros hijos dependientes de un filtro padre cuando se cambia la selección de este último
     def update_dependent_filters(self, parent_key: str) -> None:
-        if self.parent_tab is None:
+        if getattr(self, "_updating", False):
             return
 
-        filter_configs = getattr(self.parent_tab, 'filter_configs', {})
-        filters_rows = getattr(self.parent_tab, 'filters_rows', {})
+        self._updating = True
 
-        for child_key, child_config in filter_configs.items():
-            if child_config.get('parent_filter') == parent_key:
-                self._apply_dependent_filter(parent_key, child_key, child_config, filters_rows)
+        try:
+            if self.parent_tab is None:
+                return
 
+            filter_configs = getattr(self.parent_tab, 'filter_configs', {})
+            filters_rows = getattr(self.parent_tab, 'filters_rows', {})
+
+            for child_key, child_config in filter_configs.items():
+                parent_filter = child_config.get('parent_filter')
+                additional_parents = child_config.get('additional_parents', [])
+
+                if parent_filter == parent_key or parent_key in additional_parents:
+                    self._apply_dependent_filter(parent_key, child_key, child_config, filters_rows)
+        finally:
+            self._updating = False
+
+    # Aplica el filtro dependiente a un filtro hijo específico según la configuración y los valores seleccionados en el padre
     def _apply_dependent_filter(
         self,
         parent_key: str,
@@ -192,49 +256,95 @@ class FilterDialog(QDialog):
         child_config: dict,
         filters_rows: dict
     ) -> None:
-        selected_parents = self.get_checked_values(parent_key)
-
-        parent_rows = filters_rows.get(parent_key, [])
+        # Obtiene todos los parents configurados para este hijo
+        main_parent = child_config.get('parent_filter')
+        additional_parents = child_config.get('additional_parents', [])
+        all_parents = [main_parent] if main_parent else []
+        all_parents.extend(additional_parents)
+        
+        # Si el cambio no viene de ninguno de los padres, no hace nada
+        if parent_key not in all_parents:
+            return
+        
         child_rows = filters_rows.get(child_key, [])
-
-        parent_key_field = child_config.get('parent_key')
-        child_parent_field = child_config.get('parent_column')
         display_field = child_config.get('column')
-
-        if not parent_key_field or not child_parent_field or not display_field:
+        
+        if not display_field:
             return
-
-        parent_config = getattr(self.parent_tab, 'filter_configs', {}).get(parent_key, {})
-        parent_display_field = parent_config.get('column')
-        if not parent_display_field:
-            return
-
-        parent_ids = set()
-        if selected_parents:
-            for prow in parent_rows:
-                display = (prow.get(parent_display_field) or '').strip()
-                if display in selected_parents:
-                    parent_id = (prow.get(parent_key_field) or '').strip()
-                    if parent_id:
-                        parent_ids.add(parent_id)
-
+        
+        # Recopila IDs permitidos de CADA parent por separado
+        parents_allowed_ids = {}  # {parent_key: {field_name: set(ids)}}
+        
+        for p_key in all_parents:
+            parent_config = getattr(self.parent_tab, 'filter_configs', {}).get(p_key, {})
+            parent_display_field = parent_config.get('column')
+            parent_rows = filters_rows.get(p_key, [])
+            
+            # Obtiene la configuración específica para este parent
+            if p_key == main_parent:
+                parent_key_field = child_config.get('parent_key')
+                child_parent_field = child_config.get('parent_column')
+            else:
+                # Para parents adicionales, usa la configuración específica del parent adicional
+                parent_key_field = child_config.get(f'{p_key}_parent_key')
+                child_parent_field = child_config.get(f'{p_key}_parent_column')
+            
+            if not parent_key_field or not child_parent_field or not parent_display_field:
+                continue
+            
+            selected_parents = self.get_checked_values(p_key)
+            
+            if selected_parents:
+                allowed_ids = set()
+                for prow in parent_rows:
+                    display = (prow.get(parent_display_field) or '').strip()
+                    if display in selected_parents:
+                        parent_id = (prow.get(parent_key_field) or '').strip()
+                        if parent_id:
+                            allowed_ids.add(parent_id)
+                
+                if allowed_ids:
+                    parents_allowed_ids[p_key] = {
+                        'child_parent_field': child_parent_field,
+                        'allowed_ids': allowed_ids
+                    }
+        
+        # Determina qué valores hijo están permitidos
         allowed_values = set()
-        if parent_ids:
+        
+        if parents_allowed_ids:
+            # Solo incluye los hijos que coinciden con TODOS los parents que tienen selecciones
             for child_row in child_rows:
-                link = (child_row.get(child_parent_field) or '').strip()
                 disp = (child_row.get(display_field) or '').strip()
-                if link in parent_ids and disp:
+                if not disp:
+                    continue
+                
+                # Verifica si este hijo coincide con todos los padres seleccionados
+                matches_all_parents = True
+                for p_key, p_data in parents_allowed_ids.items():
+                    child_parent_field = p_data['child_parent_field']
+                    allowed_ids = p_data['allowed_ids']
+                    link = (child_row.get(child_parent_field) or '').strip()
+                    
+                    # Si el hijo no tiene un ID que coincida con este padre, no lo incluye
+                    if link not in allowed_ids:
+                        matches_all_parents = False
+                        break
+                
+                if matches_all_parents:
                     allowed_values.add(disp)
         else:
+            # Si no hay padres seleccionados, muestra todos
             for child_row in child_rows:
                 disp = (child_row.get(display_field) or '').strip()
                 if disp:
                     allowed_values.add(disp)
-
+        
         allowed_values = sorted(list(allowed_values))
         self._set_list_allowed_values(child_key, allowed_values)
         self.update_dependent_filters(child_key)
 
+    # Actualiza los elementos de la lista de un filtro hijo según los valores permitidos calculados
     def _set_list_allowed_values(self, key: str, allowed: List[str]) -> None:
         listw = self.lists.get(key)
         if listw is None:
@@ -256,6 +366,7 @@ class FilterDialog(QDialog):
         listw.blockSignals(False)
         self.adjustSize()
 
+    # Recopila los valores seleccionados en el dialogo para devolverlos a la pestaña principal
     def get_selected(self) -> dict:
         res = {}
         for key, listw in self.lists.items():
@@ -268,7 +379,61 @@ class FilterDialog(QDialog):
                 res[key] = selected
         return res
 
+    # Ordena los elementos de la lista de un filtro colocando primero los marcados 
+    def ordenar_lista(self, key: str) -> None:
+        listw = self.lists.get(key)
+        if listw is None:
+            return
 
+        checked_items = []
+        unchecked_items = []
+
+        for i in range(listw.count()):
+            item = listw.item(i)
+            if item.checkState() == CQt.Checked:
+                checked_items.append((item.text(), True))
+            else:
+                unchecked_items.append((item.text(), False))
+
+        listw.blockSignals(True)
+        listw.clear()
+        for text, is_checked in checked_items + unchecked_items:
+            new_item = QListWidgetItem(text)
+            new_item.setFlags(new_item.flags() | CQt.ItemIsUserCheckable)
+            new_item.setCheckState(CQt.Checked if is_checked else CQt.Unchecked)
+            listw.addItem(new_item)
+        listw.blockSignals(False)
+
+    # Funcion para seleccionar todos los elementos de un filtro
+    def select_all(self, key: str) -> None:
+        
+        listw = self.lists.get(key)
+        if listw is None:
+            return
+        
+        listw.blockSignals(True)
+        for i in range(listw.count()):
+            item = listw.item(i)
+            item.setCheckState(CQt.Checked)
+        listw.blockSignals(False)
+    
+        self.update_dependent_filters(key)
+
+    # Funcion para deseleccionar todos los elementos de un filtro
+    def deselect_all(self, key: str) -> None:
+        listw = self.lists.get(key)
+        if listw is None:
+            return
+        
+        listw.blockSignals(True)
+        for i in range(listw.count()):
+            item = listw.item(i)
+            item.setCheckState(CQt.Unchecked)
+        listw.blockSignals(False)
+        
+        self.update_dependent_filters(key)
+
+# Pestaña general de búsqueda por nombre
 class NameTab(QWidget):
     def __init__(self, parent: QWidget, iface: QgisInterface) -> None:
         super().__init__(parent)
@@ -285,6 +450,7 @@ class NameTab(QWidget):
         self.iface = iface
         self.layers = {}
         self.selected_elements = []
+        self.filter_selection = {}
 
         self.filters_data = {
             'codigo_postal': [],
@@ -295,10 +461,18 @@ class NameTab(QWidget):
 
         self.filters_rows: Dict[str, List[Dict[str, str]]] = {}
         self.filter_configs: Dict[str, Dict[str, Any]] = {}
-        self.filter_selection = {}
 
         self.create_layout()
+        
+        # Muestra los filtros guardados en la etiqueta al inicializar
+        if self.filter_selection:
+            parts = []
+            for k, vals in self.filter_selection.items():
+                filter_name = k.replace('_', ' ').capitalize()
+                parts.append(f"{filter_name}: {', '.join(vals)}")
+            self.filters_label.setPlainText(" | ".join(parts))
 
+    #Crea la interfaz de la pestaña de búsqueda por nombre
     def create_layout(self) -> None:
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -308,9 +482,7 @@ class NameTab(QWidget):
         layout.addWidget(lbl_localizacion)
 
         self.localizacion = QLineEdit()
-        self.localizacion.setPlaceholderText(
-            'Unidad administrativa, código postal o referencia catastral'
-        )
+        self.localizacion.setPlaceholderText('Dirección, unidad administrativa, código postal o referencia catastral')
         layout.addWidget(self.localizacion)
 
         lbl_cp = QLabel('(Opcional) Filtro por código postal:')
@@ -328,7 +500,10 @@ class NameTab(QWidget):
         self.btn_filters.clicked.connect(self.open_filter_dialog)
         layout.addWidget(self.btn_filters)
 
-        self.filters_label = QLabel("Unidades administrativas seleccionadas: Todas")
+        self.filters_label = QTextEdit()
+        self.filters_label.setReadOnly(True)
+        self.filters_label.setMaximumHeight(40)
+        self.filters_label.setWordWrapMode(QTextOption.WrapMode.WordWrap)
         layout.addWidget(self.filters_label)
 
         lbl_process = QLabel('(Opcional) Filtro por tipo de elemento:')
@@ -338,7 +513,10 @@ class NameTab(QWidget):
         self.btn_open_dialog.clicked.connect(self.open_dialog)
         layout.addWidget(self.btn_open_dialog)
 
-        self.selected_label = QLabel("Elementos seleccionados: Todos")
+        self.selected_label = QTextEdit()
+        self.selected_label.setReadOnly(True)
+        self.selected_label.setMaximumHeight(40)
+        self.selected_label.setWordWrapMode(QTextOption.WrapMode.WordWrap)
         layout.addWidget(self.selected_label)
 
         self.buscar = QPushButton('Buscar')
@@ -354,6 +532,11 @@ class NameTab(QWidget):
 
         self.tabla_resultados.horizontalHeader().setStretchLastSection(False)
         self.tabla_resultados.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        
+        self.tabla_resultados.setSizePolicy(
+            QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        )
+        self.tabla_resultados.setMinimumHeight(150)
 
         layout.addWidget(self.tabla_resultados)
 
@@ -366,26 +549,37 @@ class NameTab(QWidget):
         )
         self.tabla_resultados.itemSelectionChanged.connect(self.highlight_tipo_column)
 
+    # Abre el dialogo para seleccionar los filtros y crea la lista de los seleccionados
     def open_filter_dialog(self) -> None:
         if not any(self.filters_data.values()):
             self.load_filters_from_github()
 
         filters_for_dialog = {k: v for k, v in self.filters_data.items() if k != 'codigo_postal'}
-        dlg = FilterDialog(filters_for_dialog, getattr(self, 'filter_selection', {}), self)
+        selected = getattr(self, 'filter_selection', {})
+        dlg = FilterDialog(filters_for_dialog, selected, self)
 
         if dlg.exec():
             self.filter_selection = dlg.get_selected()
             if self.filter_selection:
                 parts = []
                 for k, vals in self.filter_selection.items():
-                    suffix = '...' if len(vals) > 3 else ''
-                    parts.append(f"{k.replace('_',' ')}: {', '.join(vals[:3])}{suffix}")
-                self.filters_label.setText("Unidades administrativas seleccionadas: " + " | ".join(parts))
+                    # Convierte el nombre de la clave a formato legible 
+                    filter_name = k.replace('_', ' ').capitalize()
+                    # Agrega el nombre del filtro junto con sus valores
+                    parts.append(f"{filter_name}: {', '.join(vals)}")
+                self.filters_label.setPlainText(" | ".join(parts))
             else:
-                self.filters_label.setText("Unidades administrativas seleccionadas: Todas")
+                self.filters_label.setPlainText("")
 
             self.localizacion.setFocus()
 
+    def _save_filters(self, filters: dict) -> None:
+        self._session_filters = filters.copy()
+ 
+    def _load_filters(self) -> dict:
+        return self._session_filters.copy()
+    
+    # Define la configuración de los filtros y llama a la función para cargar cada filtro desde GitHub
     def load_filters_from_github(self) -> None:
         filter_mapping = {
             'comunidad_autonoma': {
@@ -408,18 +602,20 @@ class NameTab(QWidget):
                 'url': 'https://raw.githubusercontent.com/IDEESpain/PluginQGISCartociudad/main/Documentacion_auxiliar/cartociudad.municipio.csv',
                 'backup_url': 'https://www.idee.es/resources/documentos/Cartociudad/cartociudad.municipio.csv',
                 'column': 'nom_municipio',
-                'parent_filter': 'provincia',
-                'parent_key': 'ine_prov',
-                'parent_column': 'ine_prov',
+                'parent_filter': 'comunidad_autonoma',
+                'parent_key': 'id_com',
+                'parent_column': 'id_com',
+                'additional_parents': ['provincia'],
+                'provincia_parent_key': 'ine_prov',
+                'provincia_parent_column': 'ine_prov',
                 'defaults': ['No se han cargado los datos']
             }
         }
-
         self.filter_configs = filter_mapping
-
         for filter_key, config in filter_mapping.items():
             self._load_filter_from_github(filter_key, config)
 
+    #Procesa el CSV para extraer los valores únicos de la columna especificada
     def _load_filter_from_github(self, filter_key: str, config: Dict[str, Any]) -> None:
         github_url = config['url']
         column_name = config['column']
@@ -432,11 +628,9 @@ class NameTab(QWidget):
             backup_urls = [u.strip() for u in raw_backup if isinstance(u, str) and u.strip()]
         else:
             backup_urls = []
-
         used_source = None
         last_error = None
         csv_text = None
-
         try:
             print(f"Cargando {filter_key} desde GitHub: {github_url}")
             response = urlopen(github_url, timeout=10)
@@ -447,9 +641,10 @@ class NameTab(QWidget):
                 )
             csv_text = raw.decode('utf-8')
             used_source = f"GitHub-CSV ({github_url})"
-        except Exception as e:
+        except (URLError, Exception) as e:
             last_error = e
-            print(f"Error cargando {filter_key} desde GitHub: {e}")
+            error_desc = _get_url_error_message(e)
+            print(f"Error cargando {filter_key} desde GitHub: {error_desc}")
 
         if csv_text is None and backup_urls:
             for bu in backup_urls:
@@ -462,21 +657,28 @@ class NameTab(QWidget):
                     csv_text = raw.decode('utf-8')
                     used_source = f"Backup-CSV ({bu})"
                     break
-                except Exception as e:
+                except (URLError, Exception) as e:
                     last_error = e
-                    print(f"Error cargando {filter_key} desde backup_url {bu}: {e}")
+                    error_desc = _get_url_error_message(e)
+                    print(f"Error cargando {filter_key} desde backup_url {bu}: {error_desc}")
 
         if csv_text is None:
-            print(f"No se pudo cargar {filter_key} de ninguna fuente. Último error: {last_error}")
+            error_desc = _get_url_error_message(last_error) if last_error else "Error desconocido"
+            print(f"No se pudo cargar {filter_key} de ninguna fuente. {error_desc}")
             self.filters_data[filter_key] = defaults
             self.filters_rows[filter_key] = []
             print(f"Usando valores por defecto para {filter_key}")
+            # Mostrar advertencia solo si no es la primera carga silenciosa
+            if hasattr(self, '_filters_init_shown'):
+                QMessageBox.warning(
+                    None,
+                    "Advertencia de filtros",
+                    f"No se pudieron cargar los filtros para {filter_key}.\n\n{error_desc}\n\nUsando valores por defecto."
+                )
             return
-
         try:
             delimiter = _detect_delimiter(csv_text)
             reader = csv.DictReader(StringIO(csv_text), delimiter=delimiter)
-
             clean_rows: List[dict] = []
             for row in reader:
                 if not row:
@@ -487,16 +689,13 @@ class NameTab(QWidget):
                     for k, v in row.items()
                 }
                 clean_rows.append(clean)
-
             if not clean_rows:
                 raise ValueError(f"El archivo para {filter_key} está vacío ({used_source})")
-
             target_col = column_name.replace('\ufeff', '').strip()
             cols = set([
                 (c.replace('\ufeff', '').strip() if isinstance(c, str) else c)
                 for c in clean_rows[0].keys()
             ])
-
             if target_col not in cols:
                 candidate = None
                 for c in cols:
@@ -511,11 +710,8 @@ class NameTab(QWidget):
                         f"No se encontró la columna '{column_name}' en {used_source}. "
                         f"Columnas disponibles: {sorted(list(cols))}"
                     )
-
             self.filters_rows[filter_key] = clean_rows
-
             items = self._parse_csv_column(csv_text, target_col, delimiter)
-
             if items:
                 self.filters_data[filter_key] = items
                 print(f"Se cargaron {len(items)} registros para {filter_key} desde {used_source}")
@@ -524,41 +720,35 @@ class NameTab(QWidget):
                     f"La fuente de {filter_key} ({used_source}) no contiene datos "
                     f"en la columna '{target_col}'."
                 )
-
         except Exception as e:
-            print(f"✗ Error procesando {filter_key} desde {used_source}: {e}")
+            print(f"Error procesando {filter_key} desde {used_source}: {e}")
             self.filters_data[filter_key] = defaults
             self.filters_rows[filter_key] = []
             print(f"Usando valores por defecto para {filter_key}")
-
+    # Extrae los valores de una columna concreta del CSV
     def _parse_csv_column(self, csv_content: str, column_name: str, delimiter: str = ',') -> List[str]:
         items = set()
-
         try:
             reader = csv.DictReader(StringIO(csv_content), delimiter=delimiter)
             column_name = column_name.replace('\ufeff', '').strip()
-
             for row in reader:
                 if not row:
                     continue
-
                 clean_row = {
                     k.replace('\ufeff', '').strip(): (v.strip() if isinstance(v, str) else v)
                     for k, v in row.items()
                 }
-
                 if column_name in clean_row:
                     value = clean_row[column_name]
                     item = value.strip() if isinstance(value, str) else value
                     if item:
                         items.add(item)
-
         except Exception as e:
             print(f"Error parseando CSV: {e}")
             return []
 
         return sorted(list(items))
-
+    # Abre el dialogo para seleccionar los elementos a mostrar en la búsqueda y crea la lista de los seleccionados
     def open_dialog(self):
         todos_elementos = {
             'poblacion': 'Entidades de Población',
@@ -573,44 +763,36 @@ class NameTab(QWidget):
             'punto_recarga_electrica': 'Puntos de recarga eléctrica',
             'ngbe': 'Topónimos orográficos (NGBE)'
         }
-
         dialog = ComboDialog(todos_elementos, getattr(self, "selected_elements", []), self)
-
+        
         if dialog.exec():
-            self.selected_elements = dialog.get_selected_items()
-            texto = (
-                ", ".join([todos_elementos[elem] for elem in self.selected_elements])
-                if self.selected_elements else "Todos"
-            )
-            self.selected_label.setWordWrap(True)
-            self.selected_label.setSizePolicy(
-                QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-            )
-            self.selected_label.setText("Elementos seleccionados: " + texto)
+                self.selected_elements = dialog.get_selected_items()
+                if self.selected_elements:
+                    texto = ", ".join([todos_elementos[elem] for elem in self.selected_elements])
+                    self.selected_label.setPlainText(texto)
+                else:
+                    self.selected_label.clear()
 
         self.localizacion.setFocus()
 
+    # Construye la URL de búsqueda con los filtros seleccionados y llama a la función para obtener los candidatos
     def on_search_name(self) -> None:
         url = f'{API_GEOCODER}/candidates?q={self.localizacion.text()}&limit={LIMIT}'
-
         if self.filter_selection.get('comunidad_autonoma'):
             comunidades = self.filter_selection['comunidad_autonoma']
             comunidades_str = ','.join([c.strip() for c in comunidades if c.strip()])
             if comunidades_str:
                 url += f'&comunidad_autonoma_filter={comunidades_str}'
-
         if self.filter_selection.get('provincia'):
             provincias = self.filter_selection['provincia']
             provincias_str = ','.join([p.strip() for p in provincias if p.strip()])
             if provincias_str:
                 url += f'&provincia_filter={provincias_str}'
-
         if self.filter_selection.get('municipio'):
             municipios = self.filter_selection['municipio']
             municipios_str = ','.join([m.strip() for m in municipios if m.strip()])
             if municipios_str:
                 url += f'&municipio_filter={municipios_str}'
-
         if self.cp.text() != '':
             codigos = self.cp.text().split(',')
             codigos = [codigo.strip() for codigo in codigos]
@@ -620,7 +802,6 @@ class NameTab(QWidget):
             else:
                 QMessageBox.critical(None, "Error", "Algunos códigos postales no son válidos")
                 return
-
         print(f'Buscar: {url}')
 
         todos_elementos = [
@@ -656,13 +837,15 @@ class NameTab(QWidget):
         self.tabla_resultados.setRowCount(0)
         self.get_candidates(url)
 
+    # Realiza la petición a la API para obtener los candidatos según la URL construida
     def get_candidates(self, url: str) -> None:
         print(f"Haciendo petición a la URL: {url}")
         self.manager_candidates = QtNetwork.QNetworkAccessManager()
         self.manager_candidates.finished.connect(self.show_candidates)
         req = QtNetwork.QNetworkRequest(QUrl(url))
         self.manager_candidates.get(req)
-
+        
+    # Recibe la respuesta de la API, procesa los candidatos encontrados y los muestra en la tabla de resultados.
     def show_candidates(self, reply: QtNetwork.QNetworkReply) -> None:
         er = reply.error()
         if er == QtNetwork.QNetworkReply.NetworkError.NoError:
@@ -717,8 +900,10 @@ class NameTab(QWidget):
             self.tabla_resultados.updateGeometry()
             self.tabla_resultados.repaint()
         else:
-            QMessageBox.critical(None, "Error", f"Error en la petición: {er}")
+            error_message = _get_error_message(er)
+            QMessageBox.critical(None, "Error de conexión", error_message)
 
+    # Construye la URL para obtener la localización del candidato seleccionado y llama a la función para obtenerla
     def find_location(self, row: int, column: int) -> None:
         self.tabla_resultados.selectRow(row)
 
@@ -735,16 +920,19 @@ class NameTab(QWidget):
         self.get_location(url)
         print(f'Buscar: {url}')
 
+    # Permite hacer doble click en cualquier parte de la fila para seleccionar el candidato
     def handle_row_double_click(self, row):
         self.tabla_resultados.selectRow(row)
         self.find_location(row, 0)
 
+    #Hace una petición a la API y llama a la función que dibuja la localización
     def get_location(self, url):
         self.manager_locate = QtNetwork.QNetworkAccessManager()
         self.manager_locate.finished.connect(self.draw_location)
         req = QtNetwork.QNetworkRequest(QUrl(url))
         self.manager_locate.get(req)
 
+    # Procesa la respuesta de la API para obtener la localización del candidato seleccionado
     def draw_location(self, reply: QtNetwork.QNetworkReply) -> None:
         print('Recibiendo respuesta del servicio find...')
         er = reply.error()
@@ -756,14 +944,17 @@ class NameTab(QWidget):
             print(location)
             self.handle_location(location)
         else:
-            QMessageBox.critical(None, "Error", f"Error en la petición: {er}")
+            error_message = _get_error_message(er)
+            QMessageBox.critical(None, "Error de conexión", error_message)
 
+    # Determina el tipo de geometría a partir del WKT recibido en la respuesta de la API y añade la geometría al mapa
     def handle_location(self, location: Dict[str, Union[Any, List[Any]]]) -> None:
         wkt = location['geom']
         new_geometry_type = self.get_geometry_type(wkt)
         layer_name = self.create_layer(new_geometry_type, location)
         self.add_feature_to_layer(location, layer_name)
 
+    #Crea una capa en función de la geometría y el tipo de elemento, aplicando un estilo específico para cada caso
     def create_layer(self, geometry_type: str, location: Dict[str, Union[str, List[str]]]) -> str:
         location_type = location.get("type", "").lower()
         location_address = location.get("address")
@@ -892,6 +1083,7 @@ class NameTab(QWidget):
 
         return layer_name
 
+    # Determina el tipo de geometría a partir del WKT recibido en la respuesta de la API
     def get_geometry_type(self, wkt: str) -> str:
         if wkt.startswith('POINT'):
             return 'Point'
@@ -908,6 +1100,7 @@ class NameTab(QWidget):
         else:
             raise ValueError(f"Tipo de geometría no soportado: {wkt}")
 
+    # Crea los atributos de la capa a partir de la información recibida en la respuesta de la API
     def create_attributes_from_json(
         self,
         location: Dict[str, Union[str, List[str]]],
@@ -920,13 +1113,14 @@ class NameTab(QWidget):
             if attribute not in exclude_keys and attribute != 'geom':
                 self.fields.append(QgsField(attribute, QMetaType.Type.QString))
 
+    # Añade la geometría al mapa y realiza el zoom a la localización del candidato seleccionado
     def add_feature_to_layer(self, attributes: Dict[str, Union[Any, List[Any]]], layer_name: str) -> None:
         layer = self.layers.get(layer_name)
 
         if (
-            layer is None
-            or not QgsProject.instance().mapLayersByName(layer_name)
-            or not layer.isValid()
+            layer is None or
+            not QgsProject.instance().mapLayersByName(layer_name) or
+            not layer.isValid()
         ):
             if layer_name in self.layers:
                 del self.layers[layer_name]
@@ -967,6 +1161,7 @@ class NameTab(QWidget):
         else:
             self.zoom_to_geometry(geom, layer.crs())
 
+    # Realiza el zoom a la geometría del candidato seleccionado
     def zoom_to_bounding_box(self, geom: QgsGeometry, layer_crs: QgsCoordinateReferenceSystem) -> None:
         if geom is not None and geom.isGeosValid():
             geom = self.reproject_geometry(geom, layer_crs)
@@ -974,6 +1169,7 @@ class NameTab(QWidget):
             self.iface.mapCanvas().setExtent(extent)
             self.iface.mapCanvas().refresh()
 
+    # Realiza el zoom a la geometría del candidato seleccionado
     def zoom_to_geometry(self, geom: QgsGeometry, layer_crs: QgsCoordinateReferenceSystem) -> None:
         if geom is not None and geom.isGeosValid():
             geom = self.reproject_geometry(geom, layer_crs)
@@ -981,12 +1177,14 @@ class NameTab(QWidget):
             self.iface.mapCanvas().setExtent(extent)
             self.iface.mapCanvas().refresh()
 
+    # Reproyecta la geometría al CRS del mapa para asegurar que se muestre correctamente
     def reproject_geometry(self, geom: QgsGeometry, layer_crs: QgsCoordinateReferenceSystem) -> QgsGeometry:
         crs_dest = self.iface.mapCanvas().mapSettings().destinationCrs()
         transform = QgsCoordinateTransform(layer_crs, crs_dest, QgsProject.instance())
         geom.transform(transform)
         return geom
-
+        
+    # Resalta la columna "Tipo" del candidato seleccionado y pone en negrita el encabezado de la columna "Candidatos" si se ha seleccionado un candidato
     def highlight_tipo_column(self):
         for row in range(self.tabla_resultados.rowCount()):
             item = self.tabla_resultados.item(row, 1)
@@ -1014,4 +1212,3 @@ class NameTab(QWidget):
             if col == 0 and header:
                 font.setBold(True)
                 header.setFont(font)
-

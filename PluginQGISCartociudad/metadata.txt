@@ -2,8 +2,8 @@
 
 [general]
 name=Geocoder CartoCiudad
-description= CartoCiudad ofrece direcciones postales, topónimos, poblaciones y límites administrativos de España
-version=2.0
+description= CartoCiudad ofrece direcciones postales, topónimos, poblaciones y límites administrativos de España. || Cartociudad provides postal addresses, place names, towns and administrative boundaries of Spain.
+version=2.0.1
 qgisMinimumVersion=3.42
 qgisMaximumVersion=4.99
 author=Equipo CartoCiudad
@@ -21,6 +21,19 @@ about= <div><b>NOTA: A partir de la versión 2.0 el plugin solo estará disponib
     <li>Referencias catastrales (Servicios SOAP. Dirección General de Catastro)</li></ul>
     La información que se devuelve puede ser puntual (portales, PK, códigos postales, puntos de interés, topónimos y referencias catastrales), lineal (viales) y superficial (unidades administrativas y entidades de población).
     </div>
+    <div><b>NOTE: From version 2.0 onwards, the plugin will only be available for QGIS versions 3.42.0 or later</b>
+    QGIS Plugin for geolocation and download of Cartocidad features based on the ‘Geocoder CartoCiudad’ REST service (https://www.cartociudad.es/geocoder), which allows to locate geographic objects of Spain by geographic identenficators and geographic coordinates. The following geographic objects can be located:
+    <ul style="margin:0;">
+    <li>Postal addresses</li>
+    <li>Place names</li>
+    <li>Points of Interest</li>
+    <li>Administrative Units (Autonomous cities and communities, provinces y municipalities)</li>
+    <li>Population entities</li>
+    <li>Postal codes</li>
+    <li>Cadastral references (SOAP services. General Directorate of Cadastre)</li></ul>
+    The information returned can be point-based (portals, kilometers markers, points of interest, place names and cadastral references)
+    La información que se devuelve puede ser puntual (portales, PK, códigos postales, puntos de interés, topónimos y referencias catastrales), linear (roads) and area-based(administrative units and population entities).
+    </div>
 
 
 tracker=https://github.com/IDEESpain/PluginQGISCartociudad/issues
@@ -30,13 +43,22 @@ homepage=https://plugins.qgis.org/plugins/PluginQGISCartociudad-main
 # End mandatory items
 
 # Recommended items
-changelog=  Versión 2.0 (Marzo 2026)
+changelog=  Versión 2.0.1 (Junio 2026)
+            -Mejoras
+                En los filtros de unidades administrativas:
+                    * Botones de selección y deselección 
+                    * Caja de búsqueda 
+                    * Reordenación de la lista de los elementos seleccionados
+                *Visualización de la pestaña de ayuda en los métodos de geolocalización
+                *Visualización del texto de la lista de unidades administrativas y elementos seleccionados
+                *Aclaración de los errores
+            Versión 2.0 (Marzo 2026)
             - Arreglos: 
-            * Compatibilidad con QGIS >= 3.42.0 (Qt5) y QGIS 4.0 (Qt6)
-            * Refactor de imports para usar qgis.PyQt
-            * Adaptación de enums Qt5/Qt6 mediante capa de compatibilidad
+                * Compatibilidad con QGIS >= 3.42.0 (Qt5) y QGIS 4.0 (Qt6)
+                * Refactor de imports para usar qgis.PyQt
+                * Adaptación de enums Qt5/Qt6 mediante capa de compatibilidad
             - Mejoras: 
-            * Filtros opcionales en la búsqueda por nombre
+                * Filtros opcionales en la búsqueda por nombre  
             Versión 1.2.3 (Septiembre 2025)
             - Arreglos:
                 * Se puede interactuar con los campos de las tablas de resultados

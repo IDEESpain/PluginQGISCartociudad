@@ -32,7 +32,7 @@ class HelpDialog(QDialog):
         text_edit.setReadOnly(True)
         
         help_texts = {
-            1: <h2>Localización por nombre geográfico</h2>"
+            1: "<h2>Localización por nombre geográfico</h2>"
                 "<p>Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad. "
                 "El servicio, a partir de una petición, busca y devuelve como resultados candidatos con similitud "
                 "fonética al nombre geográfico buscado junto con una serie de parámetros de información asociada. "

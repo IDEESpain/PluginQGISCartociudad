@@ -1,77 +1,142 @@
+
+# Importacion de módulos y librerias necesarias para el funcionamiento del complemento.
+
 import os
 import sys
 
 from qgis.PyQt.QtWidgets import (
     QApplication, QVBoxLayout, QHBoxLayout, QWidget, QDockWidget,
-    QLabel, QTabWidget, QSplitter, QToolButton, QTextEdit, QScrollArea
+    QLabel, QTabWidget, QScrollArea, QDialog, QPushButton, QTextEdit
 )
-from qgis.PyQt.QtCore import Qt, QByteArray
 from qgis.PyQt.QtSvg import QSvgRenderer
 from qgis.PyQt.QtGui import QPixmap, QIcon, QPainter, QAction
+from qgis.PyQt import QtNetwork
 
 from .compat import CompatQt as CQt
+from .errors import _get_error_message, _get_url_error_message
 from .name import NameTab
 from .reverse import ReverseTab
 
 
-def create_triangle_icon(direction="right", size=16):
-    # SVG path for a triangle pointing right or left
-    if direction == "right":
-        points = "2,2 14,8 2,14"
-    else:  # left
-        points = "14,2 2,8 14,14"
 
-    svg = f"""
-    <svg width="{size}" height="{size}" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="{points}" fill="black"/>
-    </svg>
-    """
-    svg_bytes = QByteArray(svg.encode("utf-8"))
-    renderer = QSvgRenderer(svg_bytes)
-    pixmap = QPixmap(size, size)
-    pixmap.fill(CQt.Transparent)
-    painter = QPainter(pixmap)
-    renderer.render(painter)
-    painter.end()
-    return QIcon(pixmap)
+#Crea las ventanas de diálogo de ayuda para cada pestaña
+class HelpDialog(QDialog):
+    def __init__(self, parent=None, tab_index=0):
+        super().__init__(parent)
+        self.setWindowTitle("Ayuda - CartoCiudad")
+        self.setGeometry(100, 100, 600, 500)
+        
+        layout = QVBoxLayout(self)
+        
+        text_edit = QTextEdit()
+        text_edit.setReadOnly(True)
+        
+        help_texts = {
+            1: <h2>Localización por nombre geográfico</h2>"
+                "<p>Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad. "
+                "El servicio, a partir de una petición, busca y devuelve como resultados candidatos con similitud "
+                "fonética al nombre geográfico buscado junto con una serie de parámetros de información asociada. "
+                "Es importante mencionar que el orden de estos resultados y el número de registros devueltos "
+                "está determinado por tipología.</p><br>"
+                "Para realizar una búsqueda, se añade en <i>Localización</i> el elemento a buscar. A continuación, se puede pulsar "
+                "el botón de <i>Buscar</i> o la tecla <i>Enter</i>.</br>"
+                "<h3>(Opcional) Búsqueda de un elemento filtrando por código postal</h3>"
+                "<p>Permite realizar una búsqueda de cualquier elemento geográfico contenido en un "
+                "<i>código postal</i>.</p><br>"
+                "Para ello hay que introducir el elemento en <i>Localización</i> y añadir el número del código postal deseado en "
+                "<i>Filtro por código postal</i>. También, se puede filtrar por varios códigos "
+                "postales, para ello, hay que introducirlos seguidos de comas y sin espacios. De nuevo, se puede "
+                "pulsar el botón de <i>Buscar</i> o la tecla <i>Enter</i>.</br>"
+                "<h3>(Opcional) Selección de filtros por unidades administrativas</h3>"
+                "<p>Permite realizar una búsqueda de cualquier elemento geográfico contenido en "
+                "<b>municipios, provincias y/o comunidades y ciudades autónomas</b>.</p><br>"
+                "Para ello hay que seleccionar la unidad o unidades administrativas deseadas en el desplegable, "
+                "pulsar la tecla <i>aceptar</i> y, a continuación, se puede pulsar el botón de <i>Buscar</i>"
+                "o la tecla <i>Enter</i>.</br>"
+                "Por defecto, la búsqueda se realiza para todas las unidades administrativas."
+                "<h3>(Opcional) Selección de tipología de elementos para acotar la búsqueda</h3>"
+                "<p>Permite realizar una búsqueda según tipología del elemento."
+                "Para ello hay que introducir el o los tipos deseados, y a continuación se puede pulsar el botón de "
+                "<i>Buscar</i> o la tecla <i>Enter</i>. "
+                "Por defecto la búsqueda se realiza para todos los tipos de elementos, del mismo modo que si se deseleccionan todos los elementos.",
+            2: "<h2>Localización por coordenadas geográficas</h2>"
+                "<p>Se puede obtener la dirección postal de cualquier punto del territorio español a partir de sus "
+                "coordenadas. Los campos longitud y latitud que se devuelven no son los que se muestran como "
+                "parámetros de entrada en la petición, sino los correspondientes a la entidad que se devuelve "
+                "en el resultado.</p><br>"
+                "Para realizar la búsqueda hay dos métodos:</br>"
+                "<ul>"
+                "<li><b>Capturar coordenadas en el mapa:</b> Una vez seleccionado el botón de "
+                "<i>Capturar coordenadas del mapa</i>, hay que seleccionar cualquier punto en el proyecto de "
+                "trabajo y, si el servicio REST Geocoder geolocaliza una dirección, devuelve el resultado.</li>"
+                "<br>"
+                "<li><b>Buscar por coordenadas</b> También se puede buscar una dirección si se tienen sus "
+                "coordenadas geográficas (latitud y longitud en WGS84; EPSG:4326)."
+                "<ol>"
+                "<li>Rellenar los dos campos (puede usarse tanto punto como coma de separador decimal):"
+                "<ul>"
+                "<li><i>Introduzca la longitud geográfica</i></li>"
+                "<li><i>Introduzca la latitud geográfica</i></li>"
+                "</ul>"
+                "</li>"
+                "<li>A continuación, pulsar el botón <i>Buscar por coordenadas</i> o la tecla <i>Enter</i>.</li>"
+                "</ol>"
+                "</li>"
+                "</ul>"
+        }
+        
+        text_edit.setText(help_texts.get(tab_index, ""))
+        layout.addWidget(text_edit)
+        
+        button_close = QPushButton("Cerrar")
+        button_close.clicked.connect(self.accept)
+        layout.addWidget(button_close)
 
-
+# Crea la interfaz gráfica del plugin dentro de QGIS
 class Geocoder:
+
+    #Define las caracteristicas iniciales de la interfaz gráfica del plugin
     def __init__(self, iface):
         self.iface = iface
         self.action = None
         self.dock = None
         self.initGui()
+        self._session_filters = {} 
 
+    #Crea el botón del plugin en la barra de herramientas y en el menú de complementos de QGIS. 
     def initGui(self):
-        # Evitar agregar la acción varias veces
+        # Evita agregar el plugin varias veces
         if self.action is None:
             icon_path = os.path.join(os.path.dirname(__file__), "images", "Logo_small.svg")
             self.action = QAction(
                 QIcon(icon_path),
-                "Gecoder Cartociudad",
+                "Geocoder Cartociudad",
                 self.iface.mainWindow()
             )
+            # Define que hace si se pulsa el botón del plugin
             self.action.triggered.connect(self.run)
 
-            # Añadir la acción al menú de plugins
-            self.iface.addPluginToMenu("&Gecoder Cartociudad", self.action)
+            # Añade la acción al menú de plugins
+            self.iface.addPluginToMenu("&Geocoder Cartociudad", self.action)
 
-            # Añadir la acción a la barra de herramientas con el logo como icono
+            # Añade la acción a la barra de herramientas con el logo como icono
             self.iface.addToolBarIcon(self.action)
 
+    #Elimina el botón del plugin y del panel lateral cuando se desactiva
     def unload(self):
-        # Eliminar la acción del menú y la barra de herramientas cuando se desactiva el complemento
+        # Elimina el plugin del menú y la barra de herramientas cuando se desactiva el complemento
         if self.action is not None:
-            self.iface.removePluginMenu("&Gecoder Cartociudad", self.action)
+            self.iface.removePluginMenu("&Geocoder Cartociudad", self.action)
             self.iface.removeToolBarIcon(self.action)
             self.action = None
 
+        # Elimina el plugin del panel lateral cuando se desactiva el complemento
         if self.dock is not None:
             self.iface.removeDockWidget(self.dock)
             self.dock.deleteLater()
             self.dock = None
 
+    #Crea el panel del plugin si aún no existe y lo pone en la izquierda en primer plano. En el caso de que exista simplemente lo muestra y lo pone en primer plano.
     def run(self):
         # Evitar abrir múltiples docks
         if self.dock is None:
@@ -81,8 +146,10 @@ class Geocoder:
         self.dock.show()
         self.dock.raise_()
 
-
+#Crea la interfaz gráfica del panel principal del plugin
 class MyDockWidget(QDockWidget):
+
+    #Define las caracteristicas iniciales del panel principal del plugin
     def __init__(self, iface):
         super().__init__()
         self.iface = iface
@@ -90,175 +157,43 @@ class MyDockWidget(QDockWidget):
         self.plugin_dir = os.path.dirname(__file__)
         self.setWindowTitle("Geocoder CartoCiudad")
 
-        # Crear el widget principal
+        # Crea el widget principal, lo asigna al panel y establece la interfaz
         main_widget = QWidget()
         self.setWidget(main_widget)
         layout = QVBoxLayout(main_widget)
 
-        # Logo en la parte superior
+        # Crea un layout horizontal para el logo
         logo_layout = QHBoxLayout()
+        # Agrega un espacio flexible a la izquierda del logo para centrarlo
         logo_layout.addStretch()
-
+        # Crea una etiqueta para mostrar el logo y carga la imagen del logo desde el directorio del plugin
         label = QLabel()
+        # Carga la imagen del logo desde el directorio del plugin y la muestra en la etiqueta
         pixmap = QPixmap(os.path.join(self.plugin_dir, "images", "Logo.png"))
         label.setPixmap(pixmap)
         label.setMaximumHeight(80)
         logo_layout.addWidget(label)
-
+        # Agrega un espacio flexible a la derecha del logo para centrarlo
         logo_layout.addStretch()
+        # Agrega el layout del logo al layout principal del panel
         layout.addLayout(logo_layout)
 
-        # Crear las pestañas
+        # Crea las pestañas
         self.tabs = QTabWidget()
         self.add_tabs()
-
-        # Splitter principal
-        self.splitter = QSplitter(CQt.Horizontal)
-        self.splitter.addWidget(self.tabs)
-
-        # Widget de ayuda
-        self.help_widget = QTextEdit("Aquí va la información de ayuda de tu plugin.")
-        self.help_widget.setReadOnly(True)
-        self.splitter.addWidget(self.help_widget)
-
-        self.splitter.setSizes([400, 200])
-        self.splitter.setCollapsible(0, False)
-
-        # Conectar el cambio de pestaña a la función de ayuda
-        self.tabs.currentChanged.connect(self.update_help_text)
-        self.update_help_text(self.tabs.currentIndex())
+        # No permite el scroll horizontal, no es necesario con 3 pestañas
         self.tabs.setUsesScrollButtons(False)
+        # Añade las pestañas al layout principal del panel
+        layout.addWidget(self.tabs)
 
-        layout.addWidget(self.splitter)
+    # Muestra el diálogo de ayuda correspondiente a cada pestaña
+    def show_help_dialog(self, tab_index):
+        dialog = HelpDialog(self, tab_index)
+        dialog.exec()
 
-        # Botón de colapso en el handle del splitter
-        self.splitter_handle = self.splitter.handle(1)
-        self.splitter.splitterMoved.connect(self.splitterChanged)
-        self.mHelpCollapsed = False
-        self.mSplitterState = QByteArray()
-
-        handle_layout = QVBoxLayout()
-        handle_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.button_collapse = QToolButton(self.splitter_handle)
-        self.button_collapse.setFixedSize(24, 24)
-        self.button_collapse.setCursor(CQt.ArrowCursor)
-        self.button_collapse.setArrowType(CQt.RightArrow)
-        self.button_collapse.setToolTip("Mostrar/ocultar ayuda")
-        self.button_collapse.setStyleSheet("""
-            QToolButton {
-                background-color: transparent;
-                border: none;
-                padding: 0px;
-            }
-            QToolButton:pressed {
-                background-color: #e0e0e0;
-            }
-        """)
-        self.button_collapse.setText("")
-
-        handle_layout.addStretch()
-        handle_layout.addWidget(self.button_collapse)
-        handle_layout.addStretch()
-
-        self.splitter_handle.setLayout(handle_layout)
-        self.splitter_handle.setMinimumHeight(40)
-        self.button_collapse.clicked.connect(self.toggleCollapsed)
-
-    def splitterChanged(self, pos, index):
-        if self.splitter.sizes()[1] == 0:
-            self.mHelpCollapsed = True
-            self.button_collapse.setArrowType(CQt.LeftArrow)
-        else:
-            self.mHelpCollapsed = False
-            self.button_collapse.setArrowType(CQt.RightArrow)
-
-    def toggleCollapsed(self):
-        if self.mHelpCollapsed:
-            if not self.mSplitterState.isEmpty():
-                self.splitter.restoreState(self.mSplitterState)
-            else:
-                self.splitter.setSizes([400, 200])
-            self.button_collapse.setArrowType(CQt.RightArrow)
-        else:
-            self.mSplitterState = self.splitter.saveState()
-            self.splitter.setSizes([1, 0])
-            self.button_collapse.setArrowType(CQt.LeftArrow)
-
-        self.mHelpCollapsed = not self.mHelpCollapsed
-
-    def update_help_text(self, index):
-        if index == 0:
-            self.help_widget.hide()
-        else:
-            self.help_widget.show()
-
-            if index == 1:
-                self.help_widget.setText(
-                    "<h2>Localización por nombre geográfico</h2>"
-                    "<p>Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad. "
-                    "El servicio, a partir de una petición, busca y devuelve candidatos con resultados con similitud "
-                    "fonética al nombre geográfico buscado, junto con una serie de parámetros de información asociada. "
-                    "Es importante mencionar que el orden de estos resultados sigue un orden intrínseco por tipología "
-                    "y que el número de registros también está determinado por tipología.</p><br>"
-                    "Para ello se añade en <i>Localización</i> el elemento a buscar. A continuación, se puede pulsar "
-                    "el botón de <i>Buscar</i> o la tecla <i>Enter</i>.</br>"
-                    "<h3>(Opcional) Búsqueda de un elemento filtrando por código postal</h3>"
-                    "<p>Permite realizar una búsqueda de cualquier elemento geográfico contenido en un "
-                    "<i>código postal</i>.</p><br>"
-                    "Para ello hay que introducir el elemento a buscar y además hay que añadir en Filtro por código postal "
-                    "el número del código postal deseado. Así mismo, se puede filtrar por varios códigos "
-                    "postales y, para ello, hay que introducirlos seguidos de comas y sin espacios. De nuevo, se puede "
-                    "pulsar el botón de <i>Buscar</i> o la tecla <i>Enter</i>.</br>"
-                    "<h3>(Opcional) Selección de filtros por unidades administrativas</h3>"
-                    "<p>Permite realizar una búsqueda de cualquier elemento geográfico contenido en un "
-                    "<b>municipios, provincias o comunidades y ciudades autónomas</b>.</p><br>"
-                    "Por defecto, la búsqueda se realiza para todas las unidades administrativas. "
-                    "Para ello hay que seleccionar la unidad o unidades administrativas deseadas en el desplegable, "
-                    "pulsar la tecla <i>aceptar</i> y, a continuación, se puede pulsar el botón de <i>Buscar</i>"
-                    "o la tecla <i>Enter</i>.</br>"
-                    "<h3>(Opcional) Selección de tipología de elementos para acotar la búsqueda</h3>"
-                    "<p>Permite realizar una búsqueda de cualquier tipo de elemento de la siguiente lista de tipos: <br>"
-                    "<b>Entidades de población, municipios, provincias, comunidades y ciudades autónomas, topónimos o POI, viales (urbanos o interurbanos), portales o puntos kilométricos, "
-                    "expendidurías, puntos de recarga eléctrica, referencias catastrales o topónimos orográficos (NGBE) "
-                    "de España.</b></p><br>"
-                    "Por defecto, la búsqueda se realiza para todos los tipos de elementos, también, si se "
-                    "deseleccionan todos los tipos, la búsqueda también se realizará para todos ellos. "
-                    "Para ello hay que introducir el o los tipos deseados. Así mismo, se puede pulsar el botón de "
-                    "<i>Buscar</i> o la tecla <i>Enter</i>."
-                )
-
-            elif index == 2:
-                self.help_widget.setText(
-                    "<h2>Localización por coordenadas geográficas</h2>"
-                    "<p>Se puede obtener la dirección postal de cualquier punto del territorio español a partir de sus "
-                    "coordenadas. Los campos longitud y latitud que se devuelven no son los que se muestran como "
-                    "parámetros de entrada en la petición, sino los correspondientes a la entidad que se devuelve "
-                    "en el resultado.</p><br>"
-                    "Para ello hay dos métodos:</br>"
-                    "<ul>"
-                    "<li><b>Capturar coordenadas en el mapa:</b> Una vez seleccionado el botón de "
-                    "<i>Capturar coordenadas del mapa</i>, hay que seleccionar cualquier punto en el proyecto de "
-                    "trabajo y, si el servicio REST Geocoder geolocaliza una dirección, devuelve el resultado.</li>"
-                    "<br>"
-                    "<li><b>Buscar por coordenadas</b> También se puede buscar una dirección si se tienen sus "
-                    "coordenadas geográficas (latitud y longitud en WGS84; EPSG:4326 )."
-                    "<ol>"
-                    "<li>Rellenar los dos campos:"
-                    "<ul>"
-                    "<li><i>Introduzca la longitud geográfica</i></li>"
-                    "<li><i>Introduzca la latitud geográfica</i></li>"
-                    "</ul>"
-                    "</li>"
-                    "<li>Pulsar el botón <i>Buscar por coordenadas</i> o la tecla <i>Enter</i>.</li>"
-                    "</ol>"
-                    "</li>"
-                    "</ul>"
-                )
-            else:
-                self.help_widget.setText("")
-
+    # Añade las pestañas al panel principal del plugin
     def add_tabs(self):
+        # Crea cada pestaña y la añade su contenido al panel de cada pestaña
         welcome_tab = self.create_welcome_tab()
         self.tabs.addTab(welcome_tab, "CartoCiudad")
 
@@ -268,10 +203,14 @@ class MyDockWidget(QDockWidget):
         reverse_tab = self.create_reverse_tab()
         self.tabs.addTab(reverse_tab, "Localización por coordenadas")
 
-    def create_welcome_tab(self):
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
 
+    # Crea el el contenido de la pestaña de bienvenida
+    def create_welcome_tab(self):
+        # Crea la pesataña 
+        tab = QWidget()
+        # Crea el layout de la pestaña y lo asigna a la pestaña
+        layout = QVBoxLayout(tab)
+        # Crea la etiqueta con el texto de bienvenida.
         label = QLabel(
             "<p><b>NOTA: A partir de la versión 2.0 el plugin solo estará disponible para versiones de QGIS 3.42.0 o superiores.</b></p>"
             "<h2>Descripción del Geocoder CartoCiudad</h2>"
@@ -308,11 +247,13 @@ class MyDockWidget(QDockWidget):
             "</a>"
             "</p>"
         )
+        #Permite que el texto se divida en varias lineas
         label.setWordWrap(True)
+        #Permite interpretar el texto como HTML para mostrar enlaces y formato enriquecido
         label.setTextFormat(CQt.RichText)
         label.setOpenExternalLinks(True)
         label.setStyleSheet("padding: 8px 16px 16px 8px;")
-
+        #Crea un área de scroll para la etiqueta, para que se pueda desplazar el texto
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(label)
@@ -320,20 +261,44 @@ class MyDockWidget(QDockWidget):
 
         layout.addWidget(scroll)
         return tab
-
+    # Crea la pestaña de localización por nombre geográfico y añade su contenido
     def create_name_tab(self):
         name_tab = QWidget()
         name_layout = QVBoxLayout(name_tab)
+        
+        # Botón de Ayuda
+        button_help = QPushButton("Ayuda")
+        button_help.setMaximumWidth(100)
+        button_help.clicked.connect(lambda: self.show_help_dialog(1))
+        
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(button_help)
+        button_layout.addStretch()
+        name_layout.addLayout(button_layout)
+        
         name_layout.addWidget(NameTab(parent=self, iface=self.iface))
         return name_tab
-
+    # Crea la pestaña de localización por coordenadas geográficas y añade su contenido
     def create_reverse_tab(self):
         reverse_tab = QWidget()
         reverse_layout = QVBoxLayout(reverse_tab)
+        
+        # Botón de Ayuda
+        button_help = QPushButton("Ayuda")
+        button_help.setMaximumWidth(100)
+        button_help.clicked.connect(lambda: self.show_help_dialog(2))
+        
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(button_help)
+        button_layout.addStretch()
+        reverse_layout.addLayout(button_layout)
+        
         reverse_layout.addWidget(ReverseTab(parent=self, iface=self.iface))
         return reverse_tab
 
-
+# Permite ejecutar el plugin de forma independiente para pruebas y desarrollo sin necesidad de cargarlo en QGIS
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MyDockWidget(iface=None)

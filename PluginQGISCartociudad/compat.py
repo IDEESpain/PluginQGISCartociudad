@@ -43,3 +43,4 @@ class CompatQt:
 
     Horizontal = qt_enum("Orientation", "Horizontal")
     LeftDockWidgetArea = qt_enum("DockWidgetArea", "LeftDockWidgetArea")
+    

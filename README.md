@@ -98,11 +98,13 @@ Para ello hay que introducir el elemento a buscar y además hay que añadir en *
  
 ![Ejemplo busqueda filtro 2](imagenes_github/filtro2.png)
 
-🔹 **(Opcional) Búsqueda de un elemeto por unidad administrativa**
+🔹 **(Opcional) Búsqueda de un elemento por unidad administrativa**
 
 Permite realizar una búsqueda de cualquier elemento geográfico filtrando por unidad administrativa: municipios, provincias y/o comunidades autónomas. Por defecto se encuentran deseleccionados, de manera que busca en todos. Se pueden usar de manera conjunta para encontrar más rápido la UA deseada.
 
 Para ello se debe pulsar en el botón de *Filtros avanzados* y seleccionar la unidad administrativa por la que se quiere filtrar. Se pueden usar las distintas unidades a la vez y seleccionar varios de la misma unidad administrativa.
+
+Se puede realizar una búsqueda dentro de los filtros escribiendo en la ventana de *Buscar...* y hay botones para seleccionar y deseleccionar. Una vez seleccionados los elementos, ascienden al principio de la lista.
 
 *Ejemplo de búsqueda de la calle General Ibañez en la provincia de Madrid (Comunidad de Madrid)*:
 
@@ -128,7 +130,7 @@ Los elementos que se incluyen son los siguientes:
 
 Para ello se debe pulsar el botón *Seleccionar elementos* y marcar aquellos que queramos que se incluyan en la búsqueda. Una vez marcados todos los tipos se pulsa *Aceptar* o la tecla *Enter*. A continuación, para realizar la búsqueda se debe pulsar de nuevo la tecla *Enter* o el botón de *Buscar*.
 
-*Ejemplo de búsqueda de IGN con filtro en toponimo y ngbe*
+*Ejemplo de búsqueda de texto "maria" con filtro topónimo y ngbe*
 
 ![Ejemplo busqueda filtro tipo](imagenes_github/filtrotipo.png)
 
@@ -220,13 +222,14 @@ Tres tablas correspondientes con los nombres y códigos respectivos de comunidad
 ```any
 /
 ├── images 🌈             # Imágenes usadas en el plugin
-├── LICENSE 📢            # Licencia              
-├── metadata.txt 📁       # Metadatos
+├── LICENSE 📢            # Licencia
+├── metadata.txt 📄       # Metadatos
 ├── main.py 📁            # Integración de elementos
 ├── name.py 📁            # Localización por nombre geográfico
-├── reverse 📁            # Localización por coordenadas
-├── estilos 📁            # Simbología QGIS  
-└── compact.py 📁         # Archivo compatibilidad QT5-QT6                                                                    
+├── reverse.py 📁         # Localización por coordenadas
+├── estilos🎨             # Simbología QGIS
+├── compact.py 📁         # Archivo compatibilidad QT5-QT6
+└── errors.py 🚩          # Archivo de gestión de errores
 ```
 ---
 

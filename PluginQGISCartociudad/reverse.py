@@ -1,13 +1,14 @@
+# Importa los módulos y bibliotecas necesarias
 import json
 import os
-from typing import List, Dict, Union
+from typing import Dict, Union
 
 from qgis.PyQt.QtWidgets import (
     QWidget, QTableWidgetItem, QHeaderView, QMessageBox, QAbstractItemView,
     QPushButton, QVBoxLayout, QHBoxLayout, QLineEdit, QTableWidget,
     QAbstractScrollArea
 )
-from qgis.PyQt.QtCore import Qt, QUrl, QMetaType
+from qgis.PyQt.QtCore import QUrl, QMetaType
 from qgis.PyQt import QtNetwork
 
 from qgis.gui import QgisInterface, QgsMapToolEmitPoint
@@ -18,15 +19,15 @@ from qgis.core import (
 )
 
 from .compat import CompatQt as CQt
+from .errors import _get_error_message
 
-
+# # Pestaña general de búsqueda por coordenadas
 class ReverseTab(QWidget):
-    # Widget para hacer el reverse y capturar coordenadas en el mapa y devuelva la dirección
     def __init__(self, parent: QWidget, iface: QgisInterface) -> None:
         super().__init__(parent)
         self.iface = iface
         self.create_layout()
-
+    #Crea la interfaz de la pestaña de búsqueda por coordenadas
     def create_layout(self) -> None:
         reverse_layout = QVBoxLayout()
         self.setLayout(reverse_layout)
@@ -55,7 +56,7 @@ class ReverseTab(QWidget):
         self.reverse_results_table = QTableWidget()
         self.reverse_results_table.setColumnCount(7)
         self.reverse_results_table.setHorizontalHeaderLabels(
-            ['Tipo_via', 'Dirección', 'Número/pk', 'Extension', 'CCPP', 'Población', 'Municipio']
+            ['Tipo vía', 'Dirección', 'Número/pk', 'Extension', 'CCPP', 'Población', 'Municipio']
         )
 
         header = self.reverse_results_table.horizontalHeader()
@@ -92,7 +93,7 @@ class ReverseTab(QWidget):
             self.iface,
             self.reverse_results
         )
-
+    # Permite seleccionar o deseleccionar todas las filas de la tabla de resultados de búsqueda por coordenadas
     def select_all_rows(self) -> None:
         selected_rows = self.reverse_results_table.selectionModel().selectedRows()
         if selected_rows:
@@ -100,7 +101,7 @@ class ReverseTab(QWidget):
         else:
             for row in range(self.reverse_results_table.rowCount()):
                 self.reverse_results_table.selectRow(row)
-
+    # Crea una capa a partir de las filas seleccionadas 
     def create_layer(self) -> None:
         selected_rows = self.reverse_results_table.selectionModel().selectedRows()
 
@@ -121,7 +122,7 @@ class ReverseTab(QWidget):
             return
 
         self.reverse.create_reverse_layer("resultados reverse", "Point", selected_data)
-
+    # Realiza la búsqueda por coordenadas utilizando los valores introducidos
     def search_by_reverse(self) -> None:
         lon = self.coord_x.text().replace(',', '.')
         lat = self.coord_y.text().replace(',', '.')
@@ -130,18 +131,19 @@ class ReverseTab(QWidget):
             self.reverse.search_by_coordinates(lon, lat)
         else:
             QMessageBox.warning(self, "Campos incompletos", "Debe introducir ambas coordenadas.")
-
+    # Permite capturar las coordenadas haciendo clic en el mapa
     def capture_coordinates_from_map(self) -> None:
         self.reverse.start_capture()
-
+    # Limpia la tabla de resultados de búsqueda por coordenadas
     def clear_table(self) -> None:
         self.reverse.clear_table()
-
+    # Borra las filas seleccionadas de la tabla de resultados de búsqueda por coordenadas
     def clear_selection(self) -> None:
         self.reverse.clear_selection()
 
-
+# 
 class ReverseCoding:
+    # Constructor de la clase ReverseCoding que inicializa los atributos necesarios para la búsqueda por coordenadas 
     def __init__(
         self,
         table_widget: QTableWidget,
@@ -170,7 +172,8 @@ class ReverseCoding:
 
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-
+    
+    # Maneja el evento de clic en el mapa para capturar las coordenadas y realizar la búsqueda por coordenadas
     def handle_map_click(self, point: QgsPointXY) -> None:
         crs_destino = QgsCoordinateReferenceSystem.fromEpsgId(4326)
         crs_proyecto = QgsProject.instance().crs()
@@ -187,10 +190,10 @@ class ReverseCoding:
             self.search_by_coordinates(lon, lat)
         else:
             QMessageBox.critical(None, "Error", "QLineEdit objects have been deleted.")
-
+    # Inicia la herramienta de captura de coordenadas en el mapa
     def start_capture(self) -> None:
         self.iface.mapCanvas().setMapTool(self.map_tool)
-
+    # Realiza la búsqueda por coordenadas haciendo una petición a la API de Cartociudad 
     def search_by_coordinates(self, lon: float, lat: float) -> None:
         if lon and lat:
             print(f"Buscando por coordenadas Lon: {lon}, Lat: {lat}")
@@ -205,7 +208,7 @@ class ReverseCoding:
 
             self.network_manager.finished.connect(self.handle_reverse_response)
             self.network_manager.get(req)
-
+    # Maneja la respuesta de la API de Cartociudad para la búsqueda por coordenadas
     def handle_reverse_response(self, reply: QtNetwork.QNetworkReply) -> None:
         er = reply.error()
         if er == QtNetwork.QNetworkReply.NetworkError.NoError:
@@ -230,10 +233,11 @@ class ReverseCoding:
             except json.JSONDecodeError as e:
                 QMessageBox.critical(None, "Error", f"Error al decodificar la respuesta JSON: {e}")
         else:
+            error_message = _get_error_message(er)
             QMessageBox.critical(
                 None,
-                "Error",
-                f"Error en la petición Reverse Geocoding: {reply.errorString()}"
+                "Error de conexión",
+                error_message
             )
             self.update_table_with_no_response()
 
@@ -241,7 +245,7 @@ class ReverseCoding:
             self.network_manager.finished.disconnect(self.handle_reverse_response)
         except TypeError:
             pass
-
+    # Actualiza la tabla de resultados de búsqueda por coordenadas con los datos obtenidos de la API
     def update_table(self, reverse_data: Dict[str, Union[str, int]]) -> None:
         row_position = self.table_widget.rowCount()
         self.table_widget.insertRow(row_position)
@@ -284,7 +288,7 @@ class ReverseCoding:
 
         self.table_widget.updateGeometry()
         self.table_widget.repaint()
-
+    # Mensaje de información cuando la API de Cartociudad no devuelve resultados para la búsqueda por coordenadas
     def update_table_with_no_response(self) -> None:
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.Information)
@@ -292,12 +296,12 @@ class ReverseCoding:
         msg_box.setWindowTitle("Geocodificación Inversa")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg_box.exec()
-
+    # Limpia la tabla de resultados de búsqueda por coordenadas
     def clear_table(self) -> None:
         self.table_widget.setRowCount(0)
         self.results.clear()
         self.reverse_results.clear()
-
+    # Borra las filas seleccionadas de la tabla de resultados de búsqueda por coordenadas
     def clear_selection(self) -> None:
         selected_rows = self.table_widget.selectionModel().selectedRows()
         for index in sorted(selected_rows, reverse=True):
@@ -306,7 +310,7 @@ class ReverseCoding:
                 del self.results[index.row()]
             if index.row() < len(self.reverse_results):
                 del self.reverse_results[index.row()]
-
+    # Crea una capa a partir de las filas seleccionadas en la tabla de resultados de búsqueda por coordenadas
     def create_reverse_layer(self, base_layer_name, geometry_type, data_list):
         excluded_attributes = ['state', 'stateMsg', 'countryCode', 'x', 'y', 'noNumber']
 
@@ -398,7 +402,7 @@ class ReverseCoding:
 
         if last_layer is not None:
             self.zoom_to_layer(last_layer)
-
+    #Crea los atributos de la capa a partir de los datos obtenidos de la API de Cartociudad para la búsqueda por coordenadas
     def create_attributes_from_json(self, location: Dict[str, Union[str, int, float]]) -> None:
         self.fields = QgsFields()
         excluded_attributes = ['stateMsg', 'state', 'countryCode']
@@ -414,7 +418,7 @@ class ReverseCoding:
                 else:
                     field_type = QMetaType.Type.QString
                 self.fields.append(QgsField(attribute, type=field_type))
-
+    #Añade una característica a la capa creada a partir de los datos obtenidos de la API de Cartociudad 
     def add_feature_to_layer(self, attributes: Dict[str, Union[str, int, float]], layer_name: str) -> None:
         layer = self.layers[layer_name]
         if layer and layer.isValid():
@@ -434,7 +438,7 @@ class ReverseCoding:
             pr = layer.dataProvider()
             pr.addFeature(feature)
             layer.updateExtents()
-
+    # Reproyecta el extent de la capa al sistema de referencia del proyecto para poder hacer zoom 
     def reproject_extent(
         self,
         extent: QgsRectangle,
@@ -444,7 +448,7 @@ class ReverseCoding:
         transform = QgsCoordinateTransform(source_crs, dest_crs, QgsProject.instance())
         extent_transformado = transform.transformBoundingBox(extent)
         return extent_transformado
-
+    # Realiza zoom a la capa creada a partir de los resultados de búsqueda por coordenadas
     def zoom_to_layer(self, layer: QgsVectorLayer) -> None:
         extent = layer.extent()
         if extent:
@@ -453,4 +457,3 @@ class ReverseCoding:
 
         self.iface.mapCanvas().setExtent(extent)
         self.iface.mapCanvas().refresh()
-

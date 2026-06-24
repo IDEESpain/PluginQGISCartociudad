@@ -157,7 +157,7 @@ También se puede buscar una dirección si se tienen sus coordenadas geográfica
 Para ello hay que segur los siguientes pasos:
 
 1. Rellenar los dos campos:
- * *Introduzca lognitud geográfica*
+ * *Introduzca longitud geográfica*
  * *Introduzca latitud geográfica*
 
 2. Pulsar al botón *Buscar por coordenadas* o tecla *Enter*

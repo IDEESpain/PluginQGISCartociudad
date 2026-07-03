@@ -63,10 +63,6 @@ Permite realizar búsquedas de los diferentes elementos geográficos contenidos 
 
 Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*. Una vez escrita la dirección se puede pulsar el botón de *Buscar* o la tecla *Enter*.
 
- *Ejemplo de búsqueda de un vial*:
-
-![Ejemplo busqueda](imagenes_github/ejemplo_ng.png)
-
 🔹 **Navegador de capas**
 
 Las capas se ven en el navegador de capas según grupo a la tipología a la que pertecezca, en la imágen anterior se aprecia la capa de Viales, y la capa se nombra con el tipo de vía, el nombre de la vía y la población en la que se encuentra. Otras tipologías de elementos se nombran de otras formas según se requiera. Por ejemplo, las capas dentro del grupo de la tipología códigos postales solo se nombran con el código postal. 
@@ -90,13 +86,6 @@ Para una visualización optima de las tablas de resultados, se puede interactuar
 Permite realizar una búsqueda de cualquier elemento geográfico contenido en un código postal. 
 Para ello hay que introducir el elemento a buscar y además hay que añadir en *Filtrar por código postal* el número del código postal deseado. Así mismo, se puede filtrar por varios códigos postales, y para ello, hay que introducirlos seguidos de comas y sin espacios. También, una vez escritos los CCPP se puede pulsar el botón de *Buscar* o la tecla *Enter*.
 
- *Ejemplo de búsqueda del Instituto Geográfico Nacional*:
-
-![Ejemplo busqueda filtro 1](imagenes_github/filtro1.png)
-
- *Ejemplo de búsqueda del Instituto Geográfico Nacional del código postal 28003*:
- 
-![Ejemplo busqueda filtro 2](imagenes_github/filtro2.png)
 
 🔹 **(Opcional) Búsqueda de un elemento por unidad administrativa**
 
@@ -108,7 +97,6 @@ Se puede realizar una búsqueda dentro de los filtros escribiendo en la ventana 
 
 *Ejemplo de búsqueda de la calle General Ibañez en la provincia de Madrid (Comunidad de Madrid)*:
 
-![Ejemplo busqueda filtro UA](imagenes_github/filtroUA.png)
 
 🔹 **(Opcional) Búsqueda de un elemento por tipo**
 
@@ -130,12 +118,12 @@ Los elementos que se incluyen son los siguientes:
 
 Para ello se debe pulsar el botón *Seleccionar elementos* y marcar aquellos que queramos que se incluyan en la búsqueda. Una vez marcados todos los tipos se pulsa *Aceptar* o la tecla *Enter*. A continuación, para realizar la búsqueda se debe pulsar de nuevo la tecla *Enter* o el botón de *Buscar*.
 
-*Ejemplo de búsqueda de texto "maria" con filtro topónimo y ngbe*
-
-![Ejemplo busqueda filtro tipo](imagenes_github/filtrotipo.png)
-
 
 **🔖 Se pueden usar todos los tipos de filtros opcionales a la vez para ajustar la búsqueda**
+
+*Video de ejemplos de búsqueda por nombre geográfico y ultilización de los distintos filtros*
+
+[![Nombre](imagenes_github/Nombre.png)](imagenes_github/Nombre!)
 
 ---
 
@@ -157,16 +145,16 @@ También se puede buscar una dirección si se tienen sus coordenadas geográfica
 Para ello hay que segur los siguientes pasos:
 
 1. Rellenar los dos campos:
- * *Introduzca lognitud geográfica*
+ * *Introduzca longitud geográfica*
  * *Introduzca latitud geográfica*
 
 2. Pulsar al botón *Buscar por coordenadas* o tecla *Enter*
 
- *Ejemplo de búsqueda por coordenadas geográficas*:
- 
-![Ejemplo busqueda filtro 2](imagenes_github/Busquedacoordenadas.png)
-
 Además se tiene la funcionalidad de seleccionar o deseleccionar todas las capas buscadas mediante el botón _(De)seleccionar todo_.
+
+*Video de ejemplos de búsqueda por coordenadas y ultilización de los distintos filtros*
+
+[![Coordenadas](imagenes_github\Coordenadas.png)](imagenes_github/Coordenadas.mp4)
 
 🔹 **Navegador de capas**
 
@@ -188,6 +176,10 @@ Para una visualización optima de las tablas de resultados, se puede interactuar
 Hay varias formas de instalar el plugin:
 
 a) Desde QGIS (complementos -> administrar e instalar complementos). Buscar el plugin *Geocoder CartoCiudad* y se seleccionar la opción de *Instalar complemento*.
+
+*Vídeo demostración de la instalación del complemento a través de QGIS*
+
+[![Instalacion](imagenes_github/Instalacion.png)](imagenes_github/Instalacion.mp4)
 
 b) Desde el repositorio oficial de complementos https://plugins.qgis.org/plugins. Buscar el plugin *Geocoder CartoCiudad*, descargar e importar desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
 

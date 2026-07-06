@@ -59,7 +59,7 @@ tiene menú contextual
 
 [👆 Volver](#contenidos)
 
-<video controls src="https://www.idee.es/resources/documentos/Cartociudad/Busqueda_nombre_plugin_QGIS.mp4" title="Nombre"></video>
+[![Búsqueda nombre](imagenes_github/busqueda_nombre.png)](https://www.idee.es/resources/documentos/Cartociudad/Busqueda_nombre_plugin_QGIS.mp4)
 
 Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad. El servicio a partir de una petición busca y devuelve candidatos con los resultados con similitud fonética al nombre geográfico buscado, junto con una serie de parámetros de información asociada. Es importante mencionar que el orden de estos resultados sigue un orden intriseco por tipología y que el número de registros también está determinado por tipología.
 
@@ -96,8 +96,6 @@ Permite realizar una búsqueda de cualquier elemento geográfico filtrando por u
 Para ello se debe pulsar en el botón de *Filtros avanzados* y seleccionar la unidad administrativa por la que se quiere filtrar. Se pueden usar las distintas unidades a la vez y seleccionar varios de la misma unidad administrativa.
 
 Se puede realizar una búsqueda dentro de los filtros escribiendo en la ventana de *Buscar...* y hay botones para seleccionar y deseleccionar. Una vez seleccionados los elementos, ascienden al principio de la lista.
-
-*Ejemplo de búsqueda de la calle General Ibañez en la provincia de Madrid (Comunidad de Madrid)*:
 
 
 🔹 **(Opcional) Búsqueda de un elemento por tipo**
@@ -178,7 +176,7 @@ Hay varias formas de instalar el plugin:
 
 a) Desde QGIS (complementos -> administrar e instalar complementos). Buscar el plugin *Geocoder CartoCiudad* y se seleccionar la opción de *Instalar complemento*.
 
-<video controls src="https://www.idee.es/resources/documentos/Cartociudad/Instalacion_plugin_QGIS.mp4" title="Instalación"></video>
+[![Instalación](imagenes_github\Instalacion.png)](https://www.idee.es/resources/documentos/Cartociudad/Instalacion_plugin_QGIS.mp4)
 
 b) Desde el repositorio oficial de complementos https://plugins.qgis.org/plugins. Buscar el plugin *Geocoder CartoCiudad*, descargar e importar desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
 

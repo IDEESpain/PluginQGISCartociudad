@@ -131,7 +131,7 @@ Para ello se debe pulsar el botón *Seleccionar elementos* y marcar aquellos que
 
 [👆 Volver](#contenidos)
 
-<video controls src="https://www.idee.es/resources/documentos/Cartociudad/Busqueda_coordenadas_plugin_QGIS.mp4" title="Coordenadas"></video>
+[![Búsqueda coordenadas](imagenes_github/busqueda_coordenadas.png)](https://www.idee.es/resources/documentos/Cartociudad/Busqueda_coordenadas_plugin_QGIS.mp4)
 
 
 Se puede obtener la dirección postal de cualquier punto del territorio español a partir de sus coordenadas. Los campos longitud y latitud que se devuelven no son los que se muestran como parámetros de entrada en la petición, sino los correspondientes a la entidad que se devuelve en el resultado.

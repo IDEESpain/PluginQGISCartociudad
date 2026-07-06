@@ -59,6 +59,8 @@ tiene menú contextual
 
 [👆 Volver](#contenidos)
 
+<video controls src="https://www.idee.es/resources/documentos/Cartociudad/Busqueda_nombre_plugin_QGIS.mp4" title="Nombre"></video>
+
 Permite realizar búsquedas de los diferentes elementos geográficos contenidos de CartoCiudad. El servicio a partir de una petición busca y devuelve candidatos con los resultados con similitud fonética al nombre geográfico buscado, junto con una serie de parámetros de información asociada. Es importante mencionar que el orden de estos resultados sigue un orden intriseco por tipología y que el número de registros también está determinado por tipología.
 
 Para ello se añade en *Localización* el elemento a buscar, por ejemplo la vía *General Ibañez de Íbero, Madrid*. Una vez escrita la dirección se puede pulsar el botón de *Buscar* o la tecla *Enter*.
@@ -121,15 +123,16 @@ Para ello se debe pulsar el botón *Seleccionar elementos* y marcar aquellos que
 
 **🔖 Se pueden usar todos los tipos de filtros opcionales a la vez para ajustar la búsqueda**
 
-*Video de ejemplos de búsqueda por nombre geográfico y ultilización de los distintos filtros*
 
-[![Nombre](imagenes_github/Nombre.png)](imagenes_github/Nombre!)
 
 ---
 
 ### 🔸Localización por coordenadas geográficas <a name="coordenadas"></a>
 
 [👆 Volver](#contenidos)
+
+<video controls src="https://www.idee.es/resources/documentos/Cartociudad/Busqueda_coordenadas_plugin_QGIS.mp4" title="Coordenadas"></video>
+
 
 Se puede obtener la dirección postal de cualquier punto del territorio español a partir de sus coordenadas. Los campos longitud y latitud que se devuelven no son los que se muestran como parámetros de entrada en la petición, sino los correspondientes a la entidad que se devuelve en el resultado.
 
@@ -152,9 +155,7 @@ Para ello hay que segur los siguientes pasos:
 
 Además se tiene la funcionalidad de seleccionar o deseleccionar todas las capas buscadas mediante el botón _(De)seleccionar todo_.
 
-*Video de ejemplos de búsqueda por coordenadas y ultilización de los distintos filtros*
 
-[![Coordenadas](imagenes_github\Coordenadas.png)](imagenes_github/Coordenadas.mp4)
 
 🔹 **Navegador de capas**
 
@@ -177,9 +178,7 @@ Hay varias formas de instalar el plugin:
 
 a) Desde QGIS (complementos -> administrar e instalar complementos). Buscar el plugin *Geocoder CartoCiudad* y se seleccionar la opción de *Instalar complemento*.
 
-*Vídeo demostración de la instalación del complemento a través de QGIS*
-
-[![Instalacion](imagenes_github/Instalacion.png)](https://www.idee.es/resources/documentos/Cartociudad/Instalacion_plugin_QGIS.mp4)
+<video controls src="https://www.idee.es/resources/documentos/Cartociudad/Instalacion_plugin_QGIS.mp4" title="Instalación"></video>
 
 b) Desde el repositorio oficial de complementos https://plugins.qgis.org/plugins. Buscar el plugin *Geocoder CartoCiudad*, descargar e importar desde complementos -> administrar e instalar complementos -> instalar a partir de zip.
 

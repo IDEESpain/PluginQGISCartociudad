@@ -214,11 +214,11 @@ Esto puede solucionarse instalando los certificados correspondientes, tal y como
 
 ![Opción certificado](opcion_certificado.png)
 
-4) Seleccionar la pestaña de ***Detalles***, hacer click en **cada uno de los dos** certificados y pulsar ***Exportar*** para instalarlos.
+4) Seleccionar la pestaña de ***Detalles***, hacer click en **cada uno de los dos** certificados y pulsar ***Exportar*** para descargarlos.
 
 ![Visor certificados](visor_certificados.png)
 
-5) **Reiniciar QGIS** en el caso de que estuviera abierto. 
+5) Abre los certificados para instalarlos y **reinicia QGIS** en el caso de que estuviera abierto. 
 
 Ahora deberías poder hacer las peticiones sin ningún problema. 
 

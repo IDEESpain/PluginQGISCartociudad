@@ -206,15 +206,15 @@ Esto puede solucionarse instalando los certificados correspondientes, tal y como
 
 1) Accede al portal de Cartociudad: https://www.cartociudad.es/web/portal/inicio
 
-2) Haz click ***Ver información del sitio*** y a continuación en la primera pestaña/opción.
+2) Haz click ***Ver información del sitio*** y a continuación en ***La conexión es segura***.
 
 ![Información del sitio](informacion_sitio.png)
 
-3) Después, hacer click en la segunda opción para ***Mostrar certificado***.
+3) Después, hacer click en ***El certificado es válido*** para ***Mostrar certificado***.
 
 ![Opción certificado](opcion_certificado.png)
 
-4) Seleccionar la pestaña de ***Detalles*** y hacer click en **cada uno de los dos** certificados para instalarlos y pulsar ***Exportar***.
+4) Seleccionar la pestaña de ***Detalles***, hacer click en **cada uno de los dos** certificados y pulsar ***Exportar*** para instalarlos.
 
 ![Visor certificados](visor_certificados.png)
 

@@ -2,7 +2,15 @@
 
 ⚠️ **NOTA** ⚠️
 
-A partir de la versión 2.0 el plugin solo estará disponible para versiones de QGIS 3.42.0 o superiores
+A partir de la versión 2.0 el plugin solo estará disponible para versiones de QGIS 3.42.0 o superiores.
+
+⚠️⚠️ **AVISO** ⚠️⚠️
+
+En el caso de que se produzca el siguiente error se deben instalar los certificados de seguridad con los que trabajan los servicios del IGN-CNIG *(ver tutorial más abajo en: 📌 [Tutorial certificados de seguridad](#tutorialseguridad))*.
+
+![Error seguridad](<error_seguridad.png>)
+
+---
 
 
 ## ✍️ Descripción del plugin
@@ -23,6 +31,7 @@ Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y desc
   * 🔸 [Localización por nombre geográfico](#nombregeografico)
   * 🔸 [Localización por coordenadas geográficas](#coordenadas)
 * 🚀 [Instalación](#instalacion)
+* 📌 [Tutorial certificados de seguridad](#tutorialseguridad)
 * ↗️ [Exportación](#exportacion)
 * 📄 [Documentación auxiliar](#auxiliar)
 * 📁 [Estructura del código](#estructura)
@@ -31,6 +40,8 @@ Para poder utilizar estos servicios web en QGIS y así poder geolocalizar y desc
 ---
 
 ## 🛠 Funcionalidades <a name="funcionalidades"></a>
+
+[👆 Volver](#contenidos)
 
 Este complemento permiete **localizar** y **descargar** objetos geográficos de España por identificadores geográficos y/o por coordenadas geográficas. 
 
@@ -121,8 +132,6 @@ Para ello se debe pulsar el botón *Seleccionar elementos* y marcar aquellos que
 
 **🔖 Se pueden usar todos los tipos de filtros opcionales a la vez para ajustar la búsqueda**
 
-
-
 ---
 
 ### 🔸Localización por coordenadas geográficas <a name="coordenadas"></a>
@@ -154,7 +163,6 @@ Para ello hay que segur los siguientes pasos:
 Además se tiene la funcionalidad de seleccionar o deseleccionar todas las capas buscadas mediante el botón _(De)seleccionar todo_.
 
 
-
 🔹 **Navegador de capas**
 
 Las capas se añaden en un grupo llamado *Resultados_reverse* y cada capa se llama con el tipo de vía, el nombre de la vía, el portal/pk y la población. Además, en la representación del punto también se muestra una etiqueta con la misma información.
@@ -184,6 +192,38 @@ c) Desde este repositorio, en la parte de despliegues (releases): https://github
 
 ---
 
+## 📌 Tutorial certificados de seguridad <a name="tutorialseguridad"></a>
+
+[👆 Volver](#contenidos)
+
+En algunas ocasiones al realizar búsquedas puede darse el siguiente error:
+
+**"Error de conexión. Error de seguridad SSL: problema con el certificado del servidor. Compruebe su conexión o intentelo de nuevo."**
+
+Esto se debe a que faltan en su ordenador (y por tanto en QGIS) los certificados de seguridad necesarios para poder acceder a los servicios del IGN-CNIG. **El IGN-CNIG está obligado a trabajar con dichos certificados porque así lo indica HARICA, una Autoridad de Certificación ampliamente reconocida.**
+
+Esto puede solucionarse instalando los certificados correspondientes, tal y como se explica a continuación:
+
+1) Accede al portal de Cartociudad: https://www.cartociudad.es/web/portal/inicio
+
+2) Haz click ***Ver información del sitio*** y a continuación en la primera pestaña/opción.
+
+![Información del sitio](informacion_sitio.png)
+
+3) Después, hacer click en la segunda opción para ***Mostrar certificado***.
+
+![Opción certificado](opcion_certificado.png)
+
+4) Seleccionar la pestaña de ***Detalles*** y hacer click en **cada uno de los dos** certificados para instalarlos y pulsar ***Exportar***.
+
+![Visor certificados](visor_certificados.png)
+
+5) **Reiniciar QGIS** en el caso de que estuviera abierto. 
+
+Ahora deberías poder hacer las peticiones sin ningún problema. 
+
+---
+
 ## ↗️ Exportación de capas <a name="exportacion"></a>
 
 [👆 Volver](#contenidos)
@@ -196,6 +236,7 @@ b) Mediante la herramienta de *Unir capas vectoriales* y posteriormente exportar
 
 c) Mediante el complemento expermiental externo *QConsolidate3*.
 
+---
 
 ## 📄 Documentación auxiliar <a name="auxiliar"></a>
 
@@ -203,6 +244,7 @@ c) Mediante el complemento expermiental externo *QConsolidate3*.
 
 Tres tablas correspondientes con los nombres y códigos respectivos de comunidades y ciudades autónomas, provincias y municipios, recopiladas por CartoCiudad, procedentes del Instituto Geográfico Nacional. Con dichos nombres se pueden hacer una serie de filtrados en el *plugin*.
 
+---
 
 ## 📁 Estructura del código <a name="estructura"></a>
 
@@ -229,3 +271,5 @@ Tres tablas correspondientes con los nombres y códigos respectivos de comunidad
 * [Portal CartoCiudad](https://www.cartociudad.es/web/portal)
 * [Servicio REST Geocoder](https://github.com/IDEESpain/Cartociudad)
 * [Ayuda proyecto CartoCiudad](https://www.idee.es/resources/documentos/Cartociudad/StoryMap.html)
+
+---

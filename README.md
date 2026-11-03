@@ -8,7 +8,7 @@ A partir de la versión 2.0 el plugin solo estará disponible para versiones de 
 
 En el caso de que se produzca el siguiente error se deben instalar los certificados de seguridad con los que trabajan los servicios del IGN-CNIG *(ver tutorial más abajo en: 📌 [Tutorial certificados de seguridad](#tutorialseguridad))*.
 
-![Error seguridad](<error_seguridad.png>)
+![Error seguridad](<imagenes_github/serror_seguridad.png>)
 
 ---
 
@@ -208,20 +208,20 @@ Esto puede solucionarse instalando los certificados correspondientes, tal y como
 
 2) Haz click ***Ver información del sitio*** y a continuación en ***La conexión es segura***.
 
-![Información del sitio](informacion_sitio.png)
+![Información del sitio](imagenes_github/informacion_sitio.png)
 
 3) Después, hacer click en ***El certificado es válido*** para ***Mostrar certificado***.
 
-![Opción certificado](opcion_certificado.png)
+![Opción certificado](imagenes_github/opcion_certificado.png)
 
 4) Selecciona la pestaña de ***Detalles***, haz click en **cada uno de los dos** certificados y pulsa ***Exportar*** para descargarlos.
 
-![Visor certificados](visor_certificados.png)
+![Visor certificados](imagenes_github/visor_certificados.png)
 
 5) **Accede a la carpeta donde se han descargado** y haz doble click para **abrir cada uno de los certificados**. A continuación **pulsa *Instalar certificado*** y **reinicia QGIS** en el caso de que estuviera abierto. 
 
-![Descarga certificados](descarga_certificados.png)
-![Instalación certificados](instalacion_certificados.png)
+![Descarga certificados](imagenes_github/descarga_certificados.png)
+![Instalación certificados](imagenes_github/instalacion_certificados.png)
 
 Ahora deberías poder hacer las peticiones sin ningún problema. 
 
@@ -261,7 +261,7 @@ Tres tablas correspondientes con los nombres y códigos respectivos de comunidad
 ├── main.py 📁            # Integración de elementos
 ├── name.py 📁            # Localización por nombre geográfico
 ├── reverse.py 📁         # Localización por coordenadas
-├── estilos🎨             # Simbología QGIS
+├── estilos 🎨             # Simbología QGIS
 ├── compact.py 📁         # Archivo compatibilidad QT5-QT6
 └── errors.py 🚩          # Archivo de gestión de errores
 ```

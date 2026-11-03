@@ -261,7 +261,7 @@ Tres tablas correspondientes con los nombres y códigos respectivos de comunidad
 ├── main.py 📁            # Integración de elementos
 ├── name.py 📁            # Localización por nombre geográfico
 ├── reverse.py 📁         # Localización por coordenadas
-├── estilos🎨             # Simbología QGIS
+├── estilos 🎨             # Simbología QGIS
 ├── compact.py 📁         # Archivo compatibilidad QT5-QT6
 └── errors.py 🚩          # Archivo de gestión de errores
 ```

@@ -8,7 +8,7 @@ A partir de la versión 2.0 el plugin solo estará disponible para versiones de 
 
 En el caso de que se produzca el siguiente error se deben instalar los certificados de seguridad con los que trabajan los servicios del IGN-CNIG *(ver tutorial más abajo en: 📌 [Tutorial certificados de seguridad](#tutorialseguridad))*.
 
-![Error seguridad](<imagenes_github/serror_seguridad.png>)
+![Error seguridad](<imagenes_github/error_seguridad.png>)
 
 ---
 
